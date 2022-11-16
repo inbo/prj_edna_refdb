@@ -1,2 +1,2 @@
 # prj_edna_refdb
-Scripts for creating and updating e-dna reference databases
+Creation of Reference Database for E-DNA analysis at INBO

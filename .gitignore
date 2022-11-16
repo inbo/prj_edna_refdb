@@ -37,3 +37,21 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+#location of input files and database
+database/
+input/
+output/
+taxonomy/*.*
+output/*.*
+
+
+#file extensions
+*.sqlite
+*.dmp
+*.zip
+*.tar.gz
+*.tar
+*.prt
+*.Rdata
+

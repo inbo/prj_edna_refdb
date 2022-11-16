@@ -1,0 +1,228 @@
+
+library(RSQLite)
+library(DBI)
+
+refdb_name <- "ReferentieDB.sqlite"
+mydb <- RSQLite::dbConnect(RSQLite::SQLite(), refdb_name)
+
+# INPUT TABELLEN
+#-----------------
+
+## TABEL MET INPUT SEQUENTIES
+
+tbl_input <- '
+CREATE TABLE "INPUT" (
+	"ID"	INTEGER NOT NULL UNIQUE,
+	"SOURCE_DB"	TEXT,
+	"SOURCE_FILE"	TEXT,
+	"ENTRY_ID"	TEXT NOT NULL,
+	"TAXID"	INTEGER NOT NULL,
+	"PRIMER"	TEXT,
+	"LEN"	INTEGER,
+	"GENE"	TEXT,
+	"DNA_SEQ"	TEXT,
+	"INPUT_HASH"	TEXT,
+	"ACTIVE"	INTEGER DEFAULT 1,
+	"REMARK"	TEXT,
+	PRIMARY KEY("ID" AUTOINCREMENT)
+);
+'
+
+
+## TABEL MET SOORTEN
+
+tbl_species_list <- '
+CREATE TABLE "SPECIES_LIST" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "GRP"	TEXT,
+  "TAXID"	INTEGER NOT NULL,
+  "RANK"	INTEGER,
+  "SCI_NAME"	INTEGER,
+  "DUTCH_NAME"	INTEGER,
+  "ENG_NAME"	INTEGER,
+  "ACTIVE"	INTEGER DEFAULT 1,
+  "REMARK" TEXT,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+ix_species_list <- '
+CREATE INDEX "index_species_list" ON "SPECIES_LIST" (
+  "TAXID"	ASC,
+  "SCI_NAME"	ASC
+)
+'
+
+## TABEL MET PRIORITEITEN
+
+tbl_species_priority <- '
+CREATE TABLE "SPECIES_PRIORITY" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "TAXID"	INTEGER NOT NULL,
+  "PRIORITY"	INTEGER NOT NULL,
+  "PROJECT"	TEXT NOT NULL,
+  "ACTIVE"	TEXT DEFAULT 1,
+  "REMARK" TEXT,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+ix_species_priority <- '
+CREATE UNIQUE INDEX "index_species_priority" ON "SPECIES_PRIORITY" (
+  "TAXID"	ASC,
+  "PRIORITY"	ASC,
+  "PROJECT"	ASC
+)
+'
+
+
+# DYNAMISCHE VERWERKINGSTABELLEN
+#---------------------------------
+
+## MULTIHIT TAXA
+tbl_multihit_taxa <- '
+CREATE TABLE "MULTIHIT_TAXA" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "TAXID"	INTEGER NOT NULL,
+  "PREF_TAXID"	INTEGER,
+  "PROJECT" TEXT,
+  "PRIMER"	TEXT,
+  "EVALUATION"	TEXT,
+  "BLOCKED_ON" TEXT,
+  "ACTIVE"	INTEGER DEFAULT 1,
+  "REMARK"	TEXT,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+## PASS LIST SEQUENTIES
+
+tbl_curated_seqs <- '
+CREATE TABLE "CURATED_SEQS" (
+  "ID"	INTEGER NOT NULL UNIQUE, 
+  "ENTRY_ID"	TEXT NOT NULL,
+  "TAXID"	INTEGER NOT NULL,
+  "PROJECT" TEXT,
+  "ACTIVE"	INTEGER DEFAULT 1,
+  "REMARK"	TEXT,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+## TOEGELATEN MERGED SEQUENCES
+
+tbl_allowed_merges <- '
+CREATE TABLE "ALLOWED_MERGES" (
+	"ID"	INTEGER NOT NULL,
+	"TAXID"	INTEGER NOT NULL,
+	"RANK"	TEXT,
+	"PRIMER"	BLOB,
+	"PROJECT"	TEXT,
+	"SCI_NAME"	TEXT,
+	"BLAST_NAME"	TEXT,
+	"ACTIVE"	INTEGER,
+	"REMARK"	TEXT,
+	PRIMARY KEY("ID" AUTOINCREMENT)
+'
+
+
+# VERSIE CORRESPONDENCE TABELLEN
+#-----------------------------------
+
+tbl_refdb_version <- '
+CREATE TABLE "REFDB_VERSION" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "NAME"	TEXT NOT NULL,
+  "DATE"	TEXT NOT NULL,
+  "PRIMER"	TEXT,
+  "DESCRIPTION"  TEXT, 
+  "REMARK"	TEXT,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+tbl_refdb_version_control <- '
+CREATE TABLE "REFDB_VERSION_CONTROL" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "REFDB_VERSION_ID" INTEGER NOT NULL,
+  "TABLE_NAME" TEXT NOT NULL,
+  "TABLE_ID" INT NOT NULL,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+# RESULTAAT TABELLEN
+#---------------------
+
+## TABEL MET ECOPCR RESULTATEN
+
+tbl_ecopcr_output <- '
+CREATE TABLE "ECOPCR_OUTPUT" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "REFDB_VERSION_ID"	INTEGER NOT NULL,
+  "ENTRY_ID"	TEXT,
+  "STRAND"	TEXT,
+  "SEQ_LEN_INPUT"	INTEGER,
+  "SEQ_LEN_AMPLICON"	INTEGER,
+  "AMPLICON"	TEXT,
+  "AMPLICON_HASH"	TEXT,
+  "RANK"	TEXT,
+  "TAXID"	INTEGER,
+  "SPECIES"	INTEGER,
+  "SPECIES_NAME"	TEXT,
+  "GENUS"	INTEGER,
+  "GENUS_NAME"	TEXT,
+  "FAMILY"	INTEGER,
+  "FAMILY_NAME"	TEXT,
+  "FORWARD_MATCH"	TEXT,
+  "FORWARD_ERROR"	TEXT,
+  "FORWARD_TM"	TEXT,
+  "REVERSE_MATCH"	TEXT,
+  "REVERSE_ERROR"	TEXT,
+  "REVERSE_TM"	TEXT,
+  "IS_MERGED"	INTEGER COLLATE BINARY,
+  "OBI_COUNT"	INTEGER,
+  "OBI_RANK"	TEXT,
+  "OBI_TAXID"	INTEGER,
+  "MERGED_OVERVIEW"	TEXT,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+ix_ecopcr_output <- '
+CREATE UNIQUE INDEX "index_ecopcr" ON "ECOPCR_OUTPUT" (
+  "REFDB_VERSION_ID"	ASC,
+  "ENTRY_ID"	ASC,
+  "TAXID"	ASC
+)'
+
+tbl_ecopcr_settings <- '
+CREATE TABLE "ECOPCR_SETTINGS" (
+  "ID"	INTEGER NOT NULL UNIQUE,
+  "REFDB_VERSION_ID" INTEGER NOT NULL,
+  "SETTING" TEXT NOT NULL,
+  "VALUE" TEXT NOT NULL,
+  PRIMARY KEY("ID" AUTOINCREMENT)
+)
+'
+
+
+# EFFECTIEF UITVOEREN
+
+dbSendQuery(mydb, tbl_input)
+dbSendQuery(mydb, tbl_species_list)
+dbSendQuery(mydb, ix_species_list)
+
+dbSendQuery(mydb, tbl_species_priority)
+dbSendQuery(mydb, ix_species_priority)
+
+dbSendQuery(mydb, tbl_multihit_taxa)
+dbSendQuery(mydb, tbl_curated_seqs)
+dbSendQuery(mydb, tbl_allowed_merges)
+
+dbSendQuery(mydb, tbl_refdb_version)
+dbSendQuery(mydb, tbl_refdb_version_control)
+
+dbSendQuery(mydb, tbl_ecopcr_output)
+dbSendQuery(mydb, ix_ecopcr_output)
+dbSendQuery(mydb, tbl_ecopcr_settings)
+

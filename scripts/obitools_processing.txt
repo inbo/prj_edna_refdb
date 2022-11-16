@@ -1,0 +1,77 @@
+#Obitools3:
+ python3 -m venv obi3-env
+  source obi3-env/bin/activate
+  pip3 install --upgrade pip setuptools wheel Cython
+  pip3 install OBITools3
+
+
+
+#Referentiedb
+Input_obi3.fasta is de input.fasta maar met de sequenties als lowercase
+cd refdb
+obi import input_obi3.fasta newdb/input
+obi import --taxdump ~/taxdump/new_taxdump.tar.gz newdb/taxonomy/dump
+obi ecopcr -e 4 -l 50 -L 160 -F ACTGGGATTAGATACCCC -R TAGAACAGGCTCCTCTAG --taxonomy newdb/taxonomy/dump newdb/input newdb/ecopcr
+obi grep --require-rank=species --require-rank=genus --require-rank=family --taxonomy newdb/taxonomy/dump newdb/ecopcr newdb/ecopcr_clean
+obi uniq --taxonomy newdb/taxonomy/dump newdb/ecopcr_clean newdb/ecopcr_uniq
+obi grep --require-rank=family --taxonomy newdb/taxonomy/dump newdb/ecopcr_uniq newdb/ecopcr_uniq_clean
+obi build_ref_db -t 0.97 --taxonomy newdb/taxonomy/dump newdb/ecopcr_uniq_clean newdb/ecopcr_final_097
+obi export --fasta-output newdb/ecopcr_final_097 -o final_db_097.fasta
+
+Ofwel rechtstreeks ofwel met deze fasta zou het ecotag proces van de reads moeten lukken
+Grootste moeilijkheid - hoe importeren van sequenties na processsing (fasta, tabularm fastq, sanger?)
+
+#Verwerking van reads (beginnende bij all_samples.fa)
+
+Zorg dat je in de venv blijft of opnieuw activeert (vanuit de juiste directory waar de venv staat
+
+source obi3-env/bin/activate
+cd refdb
+
+obi import all_samples.fa newdb/reads #all.samples.fa vanuit de test run van MISEQ
+
+#dereplicatie
+obi uniq -m sample newdb/reads  newdb/dereplicated_sequences
+
+#denoise
+
+##only keep count en merged sample
+obi annotate -k COUNT -k MERGED_sample newdb/dereplicated_sequences newdb/cleaned_metadata_sequences
+
+##keep with length >= 80 en minstens 10 reads
+obi grep -p "len(sequence)>=80 and sequence['COUNT']>=80" newdb/cleaned_metadata_sequences newdb/denoised_sequences
+
+##clean sequencing errors end sequencing variants
+obi clean -s MERGED_sample -r 0.05 -H newdb/denoised_sequences newdb/cleaned_sequences
+
+#assign to taxa
+obi ecotag -m 0.97 --taxonomy newdb/taxonomy/dump -R newdb/ecopcr_final_097 newdb/cleaned_sequences newdb/assigned_sequences
+
+
+#post processing
+
+##check results
+obi stats -c SCIENTIFIC_NAME newdb/assigned_sequences
+
+##align seqs
+obi align -t 0.95 newdb/assigned_sequences newdb/aligned_assigned_sequences
+
+##check history
+obi history newdb
+
+obi history -d newdb> newdb.dot
+obi history -d newdb/cleaned_sequences > newdb_one_view.dot
+dot -Tx11 newdb.dot #programma graphviz installeren
+dot -Tpng newdb.dot -o newdb.png
+open newdb.png & #werkt niet via wsl, maar de png kan je wel in windows openen
+
+#export results
+obi export --fasta-output newdb/assigned_sequences -o newdb_results.fasta
+obi export --tab-output newdb/aligned_assigned_sequences > newdb_results.csv
+
+#Voor de merging kan er een R output geschreven worden
+obi export --metabaR-output --metabaR-prefix "MBR" newdb/denoised_sequences >
+ newdb_results_R
+
+
+
