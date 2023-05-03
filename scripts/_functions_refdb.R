@@ -16,17 +16,19 @@
 #' @export
 #'
 #' @examples
-make_shellscript_refdb <- function(script = "", 
-                                   db_name,
-                                   db_location,
-                                   input_file,
-                                   taxonomy_location,
-                                   taxonomy_file,
-                                   max_errors = 4, 
-                                   min_length = 50, 
-                                   max_length = 160,
-                                   primer = "RIAZ",
-                                   ecotag_min_similarity = 0.97) {
+make_shellscript_refdb <- 
+  function(script = "", 
+          db_name,
+          db_location,
+          input_file,
+          taxonomy_location,
+          taxonomy_file,
+          max_errors = 4, 
+          min_length = 50, 
+          max_length = 160,
+          primer = "RIAZ",
+          ecotag_min_similarity = 0.99,
+          environment_call =  "/app/obi3-env/bin/activate") {
   primers <- select_primer_tags(which = "RIAZ")
   p1 <- primers[1]
   p2 <- primers[2]
@@ -43,13 +45,8 @@ make_shellscript_refdb <- function(script = "",
   commands <- 
     paste(sep = "\n",
           paste0("#!/bin/bash"),
-          paste0("cd ~"),
-          paste0("source obi3-env/bin/activate"),
-          paste0("cd refdb"),
-          paste0("mkdir ", db_name),
-          paste0("cd ", db_name),
-          paste0("cp -f ",file.path(wdtux, input_file), " . "),
-          paste0("cp -f ", tdtux, " . "),
+          paste0("cd /app"),
+          paste0(paste0("source ","/app/obi3-env/bin/activate")),
           paste0("echo 'aantal inputs: ' > logfile.txt"),
           paste0("grep -E  -i '>' ", 
                  input_file, 
@@ -108,18 +105,16 @@ make_shellscript_refdb <- function(script = "",
           paste0("grep -E  -i '>' ",
                  " final_db_", ecotag_min_similarity, ".fasta", 
                  " | wc -l >> logfile.txt"), #telt de lijnen die gegrept zijn
-          paste0("cp ", 
-                 "*.fasta",
-                 " ", wdtux),
-          paste0("cp ", 
-                 "*.ecopcr",
-                 " ", wdtux),
-          paste0("cp -r ",
-                 "refdb.obidms",
-                 " ", wdtux)
+          paste0("\n")
     )
-  if (script == "console") script <- ""
-  cat(commands, file = script)
+  if (script == "console") {
+    script <- ""
+    cat(commands, file = script)
+  }
+  #convert to unix enconding
+  f <- file(script, open = "wb")
+  cat(commands, file = f)
+  close(f)
 }
 
 
@@ -134,48 +129,48 @@ make_shellscript_refdb <- function(script = "",
 #' @export
 #'
 #' @examples
-combine_ecpocr_with_merged <- function(ecopcr, merged) {
-  merged <- merged %>%   
-    mutate(merged_count = ifelse(is.na(merged_count) | merged_count == "", 
-                                 count, 
-                                 merged_count)) %>% 
-    filter(merged_count > 1)  
-  
-  combined <- ecopcr %>% 
-    left_join(merged %>% 
-                transmute(AMPLICON_HASH, merged_count, 
-                          merged_taxa = merged_taxid,
-                          merged_rank = rank, merged_taxid = taxid,
-                          merged_taxid, IS_MERGED = 1),
-              by = "AMPLICON_HASH")
-  
-  rv <- combined %>% 
-    transmute(LABEL = "INIT", ENTRY_ID = genlab_id, STRAND = strand,
-              SEQ_LEN_INPUT = seq_length_ori, 
-              SEQ_LEN_AMPLICON = nchar(dna_sequence), 
-              AMPLICON = dna_sequence, AMPLICON_HASH,
-              RANK = rank, TAXID = taxid, 
-              SPECIES = species, SPECIES_NAME = species_name, 
-              GENUS = genus, GENUS_NAME = genus_name, 
-              FAMILY = family, FAMILY_NAME = family_name, 
-              FORWARD_MATCH = forward_match, 
-              FORWARD_ERROR = forward_error, 
-              FORWARD_TM = forward_tm,
-              REVERSE_MATCH = reverse_match, 
-              REVERSE_ERROR = reverse_error, 
-              REVERSE_TM = reverse_tm, 
-              IS_MERGED, OBI_COUNT = merged_count, 
-              OBI_RANK = merged_rank, OBI_TAXID = merged_taxid,
-              MERGED_OVERVIEW = merged_taxa)
-  
-  rv <- rv %>% 
-    mutate(OBI_COUNT = ifelse(is.na(OBI_COUNT), 1, OBI_COUNT), 
-           OBI_RANK = ifelse(is.na(OBI_RANK), RANK, OBI_RANK), 
-           OBI_TAXID = ifelse(is.na(OBI_TAXID), TAXID, OBI_TAXID), 
-           IS_MERGED = ifelse(is.na(IS_MERGED), 0, IS_MERGED))
-  
-  rv
-}
+# combine_ecpocr_with_merged <- function(ecopcr, merged) {
+#   merged <- merged %>%   
+#     mutate(merged_count = ifelse(is.na(merged_count) | merged_count == "", 
+#                                  count, 
+#                                  merged_count)) %>% 
+#     filter(merged_count > 1)  
+#   
+#   combined <- ecopcr %>% 
+#     left_join(merged %>% 
+#                 transmute(amplicon_hash, merged_count, 
+#                           merged_taxa = merged_taxid,
+#                           merged_rank = rank, merged_taxid = taxid,
+#                           merged_taxid, is_merged = 1),
+#               by = "amplicon_hash")
+#   
+#   rv <- combined %>% 
+#     transmute(LABEL = "INIT", ENTRY_ID = genlab_id, STRAND = strand,
+#               SEQ_LEN_INPUT = seq_length_ori, 
+#               SEQ_LEN_AMPLICON = nchar(dna_sequence), 
+#               AMPLICON = dna_sequence, AMPLICON_HASH,
+#               RANK = rank, TAXID = taxid, 
+#               SPECIES = species, SPECIES_NAME = species_name, 
+#               GENUS = genus, GENUS_NAME = genus_name, 
+#               FAMILY = family, FAMILY_NAME = family_name, 
+#               FORWARD_MATCH = forward_match, 
+#               FORWARD_ERROR = forward_error, 
+#               FORWARD_TM = forward_tm,
+#               REVERSE_MATCH = reverse_match, 
+#               REVERSE_ERROR = reverse_error, 
+#               REVERSE_TM = reverse_tm, 
+#               IS_MERGED, OBI_COUNT = merged_count, 
+#               OBI_RANK = merged_rank, OBI_TAXID = merged_taxid,
+#               MERGED_OVERVIEW = merged_taxa)
+#   
+#   rv <- rv %>% 
+#     mutate(OBI_COUNT = ifelse(is.na(OBI_COUNT), 1, OBI_COUNT), 
+#            OBI_RANK = ifelse(is.na(OBI_RANK), RANK, OBI_RANK), 
+#            OBI_TAXID = ifelse(is.na(OBI_TAXID), TAXID, OBI_TAXID), 
+#            IS_MERGED = ifelse(is.na(is_merged), 0, is_merged))
+#   
+#   rv
+# }
 
 
 
@@ -204,7 +199,7 @@ combine_ecpocr_with_merged <- function(ecopcr, merged) {
               by = "amplicon_hash")
   
   rv <- combined %>% 
-    transmute(LABEL = "INIT", genlab_id, strand,
+    transmute(label = "INIT", genlab_id, strand,
               seq_len_input = seq_length_ori, 
               seq_len_amplicon = nchar(dna_sequence), 
               amplicon = dna_sequence, amplicon_hash,
@@ -227,7 +222,7 @@ combine_ecpocr_with_merged <- function(ecopcr, merged) {
   rv
 }
 
-
+######################################################
 
 check_multihits <- function(df, specieslist) {
   merges <- paste(df$merged_overview, collapse = ";")

@@ -1,10 +1,26 @@
 #VARIABELEN
 #-----------
-
-input_source <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
+db_name <- "refdb_2023-06-01"
 user_name <- "pieter.verschelde@inbo.be"
+docker_path <- "docker_image_obitools3"
+docker_container_name <- "obitools3testcontainer" 
+root_gdrive <- file.path("G:", 
+                         ".shortcut-targets-by-id",
+                         "0B1XJuciaZSENZG55ZnlDQ0FvT0E", 
+                         "PRJ_eDNA",
+                         "PRJ_eDNA_Refdb_2023" )
+fasta_inputs <- file.path(root_gdrive, 'input_seqs', 'Riaz', 'import')
+root_gdrive_key <- "16R6hn8ov_B3eFHJ1Obhyn8BxuhK-rZnP"
+metadata_gdrive_key <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
+
+taxdump_name <- "new_taxdump_2022-05-02"
+fasta_name <- "input.fasta"
+
 googlesheets4::gs4_auth(user_name)
-db_name <- "refdb_2022-11-11"
+
+#folders
+#--------
+
 if (!dir.exists("input")) 
   dir.create("input")
 if (!dir.exists("database")) 
@@ -15,21 +31,7 @@ if (!dir.exists("output"))
   dir.create("output")
 if (!dir.exists(file.path("output", db_name)))
   dir.create(file.path("output", db_name))
-taxdump_name <- "taxdump_2022-11-09"
-fasta_name <- "input.fasta"
-fasta_name_obi3 <- "input_obi3.fasta"
 
-#drive_ls("https://drive.google.com/drive/folders/1l7Wrv0Np7tt1I6qTC6uyOwmFoTy22g8e")
-
-### locatie van input fasta (drive_download werkt niet op dit moment)
-fasta_input_folder <- "https://drive.google.com/drive/folders/1l7Wrv0Np7tt1I6qTC6uyOwmFoTy22g8e"
-
-fasta_input_path <- 
-   file.path("G:/.shortcut-targets-by-id/0B1XJuciaZSENZG55ZnlDQ0FvT0E", 
-             "PRJ_eDNA/PRJ_eDNA_Refdb_2021",
-            "input_seqs/Riaz")
-
-fasta_input_path_local <- "input"
 
 ### Refdb name
 
