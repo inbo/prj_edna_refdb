@@ -16,6 +16,22 @@ metadata_gdrive_key <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
 taxdump_name <- "new_taxdump_2022-05-02"
 fasta_name <- "input.fasta"
 
+image_name <- "obitools3pv"
+container_name <- "obitools3testcontainer"
+obi_script <- "generate_refdb.sh"
+refdb_location <- "database/refdb_2023-06-01/"
+input_fasta <- paste0(refdb_location, "input.fasta")
+taxdump_name <- "taxonomy/new_taxdump_2022-05-02.tar.gz"
+docker_path <- 'obitools3testcontainer:/app/'
+docker_script <- paste0('/app/', obi_script)
+docker_taxonomy <- paste0(docker_path, "taxdump.tar.gz")
+docker_input_fasta <- paste0(docker_path, "input.fasta")
+pscommand_build <- paste("docker", "build", "-t", image_name, ".")
+pscommand_run <- paste("docker run --rm -it --name", 
+                       container_name, image_name) #from R -t does not work
+pscommand_run <- paste("docker run --rm -i -d --name", 
+                       container_name, image_name)# -i for interactive mode, -d for detached mode (run in background) 
+
 googlesheets4::gs4_auth(user_name)
 
 #folders

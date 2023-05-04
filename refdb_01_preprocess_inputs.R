@@ -88,31 +88,23 @@ make_shellscript_refdb(script = "generate_refdb.sh",
 
 
 #docker files
-image_name <- "obitools3pv"
-container_name <- "obitools3testcontainer"
-obi_script <- "generate_refdb.sh"
-refdb_location <- "database/refdb_2023-06-01/"
-input_fasta <- paste0(refdb_location, "input.fasta")
-taxdump_name <- "taxonomy/new_taxdump_2022-05-02.tar.gz"
-docker_path <- 'obitools3testcontainer:/app/'
-docker_script <- paste0('/app/', obi_script)
-docker_taxonomy <- paste0(docker_path, "taxdump.tar.gz")
-docker_input_fasta <- paste0(docker_path, "input.fasta")
-pscommand_build <- paste("docker", "build", "-t", image_name, ".")
-pscommand_run <- paste("docker run --rm -it --name", container_name, image_name)
-pscommand_run <- paste("docker run -it --name", container_name, image_name)
+
 #prep commands
 
-system2("powershell", args = pscommand_build)
-system2("powershell", args = pscommand_run) #mogelijks werkt dit niet --> via docker desktop
+#system2("powershell", args = pscommand_build) #werkt niet, rechtstreeks in powershell uitvoeren
+
+##run container
+system2("powershell", args = pscommand_run)
+
+##copy to container
 system2('docker',  c('cp', obi_script, paste0(container_name, ':', docker_script)))
 system2('docker',  c('cp', taxdump_name, docker_taxonomy))
 system2('docker',  c('cp', input_fasta, docker_input_fasta))
 
-#execution
+##execute main script
 system2('docker', c('exec', container_name, 'bash', '-c', docker_script))
 
-#return results
+##return results
 system2('docker', c("cp", paste0(docker_path, "logfile.txt"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, obi_script), refdb_location))
 system2('docker', c("exec", container_name, "chmod", "777", obi_script))
@@ -121,3 +113,10 @@ system2('docker', c("cp", paste0(docker_path, "amplified_clean.fasta"), refdb_lo
 system2('docker', c("cp", paste0(docker_path, "amplified_clean_uniq.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "final_db_0.99.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "refdb.obidms"), refdb_location))        
+
+##exit container
+system2("powershell", "docker stop obitools3testcontainer")       
+
+
+
+

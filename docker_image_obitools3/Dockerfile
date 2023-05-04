@@ -52,9 +52,17 @@ RUN echo 'export PATH="$PATH:/app/obitools3/bin"' >> ~/.bashrc
 # Copy your Bash script into the container
 COPY welcome.sh /app/welcome.sh
 
+#Copy to run non-interactively en execute when building the image
+#COPY generate_refdb.sh /app/generate_refdb.sh
+#COPY input.fasta /app/input.fasta
+#COPY new_taxdump_2022-05-02.tar.gz /app/taxdump.tar.gz
+
 # Set the command to run your Bash script
 #CMD ["bash", "/app/welcome.sh"] #docker sluit na afronden script
 #CMD ["/bin/bash", "-c", "/app/welcome.sh && exec /bin/bash"] #docker image blijft open
 CMD ["/bin/bash", "-c", "source /app/obi3-env/bin/activate && obi test && /app/welcome.sh && exec /bin/bash"]
+
+# Set the command to keep the container running indefinitely
+CMD ["tail", "-f", "/dev/null"]
 
 
