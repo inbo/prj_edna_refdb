@@ -1,7 +1,9 @@
+user_name <- "pieter.verschelde@inbo.be"
+googlesheets4::gs4_auth(user_name) #googlesheets4::gs4_deauth()
+
 #VARIABELEN
 #-----------
 db_name <- "refdb_2023-06-01"
-user_name <- "pieter.verschelde@inbo.be"
 docker_path <- "docker_image_obitools3"
 docker_container_name <- "obitools3testcontainer" 
 root_gdrive <- file.path("G:", 
@@ -27,12 +29,11 @@ docker_script <- paste0('/app/', obi_script)
 docker_taxonomy <- paste0(docker_path, "taxdump.tar.gz")
 docker_input_fasta <- paste0(docker_path, "input.fasta")
 pscommand_build <- paste("docker", "build", "-t", image_name, ".")
-pscommand_run <- paste("docker run --rm -it --name", 
-                       container_name, image_name) #from R -t does not work
+#pscommand_run <- paste("docker run --rm -it --name", 
+#                       container_name, image_name) #from R -t does not work
 pscommand_run <- paste("docker run --rm -i -d --name", 
                        container_name, image_name)# -i for interactive mode, -d for detached mode (run in background) 
 
-googlesheets4::gs4_auth(user_name)
 
 #folders
 #--------
