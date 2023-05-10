@@ -16,12 +16,8 @@ grep -E  -i '>'  amplified_clean.fasta | wc -l >> logfile.txt
 obi uniq --taxonomy refdb/taxonomy/dump refdb/ecopcr_clean refdb/ecopcr_uniq
 obi grep --require-rank=family --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq  refdb/ecopcr_uniq_clean
 obi export refdb/ecopcr_uniq_clean -o amplified_clean_uniq.fasta
-obi build_ref_db -t 0.97 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.97
 obi build_ref_db -t 0.99 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.99
-obi build_ref_db -t 1 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_1
-obi export  --fasta-output refdb/ecopcr_final_0.97 -o final_db_0.97.fasta
 obi export  --fasta-output refdb/ecopcr_final_0.99 -o final_db_0.99.fasta
-obi export  --fasta-output refdb/ecopcr_final_1 -o final_db_1.fasta
 echo 'aantal unieke inputs na merging: ' >> logfile.txt
-grep -E  -i '>'  final_db_0.97.fasta | wc -l >> logfile.txt
+grep -E  -i '>'  final_db_0.99.fasta | wc -l >> logfile.txt
 

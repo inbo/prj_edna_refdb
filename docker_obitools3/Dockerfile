@@ -61,6 +61,7 @@ RUN wget https://downloads.sourceforge.net/project/flashpage/FLASH-1.2.11.tar.gz
 #cutadapt -g GTCAGGGGAAAA -a CTTATT -o outag.fastq testfwd.fastq
 
 #cutadapt -g TAAGAAT -G CGCGCG -o outR1.fastq -p outR2.fastq testfwd.fastq testrev.fastq
+#flash -m 4 outR1.fastq outR2.fastq
     
     
 # Update PATH variable
