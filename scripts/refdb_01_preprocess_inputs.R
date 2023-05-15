@@ -42,6 +42,7 @@ dup_ids <- df_inputs_all %>% group_by(genlab_id) %>%
             aantal_taxa = n_distinct(taxid), 
             taxa = paste(unique(taxid), collapse = ",")) %>% 
   filter(aantal_seqs > 1 | aantal_taxa > 1)
+write_excel_csv2(dup_ids, paste0(path)
 
 #Er zijn nog 7 duplicaten met andere sequenties, waarvan 1 met een andere soort (zelfde genus) nl 14-015707
 

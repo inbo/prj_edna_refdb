@@ -304,6 +304,45 @@ check_multihits <- function(df, specieslist) {
   return(df)
 }
 
+#####################################################################################
+check_multihits2 <- function(data) {
+  np1 <- sum(data$priority == 1)
+  np2 <- sum(data$priority == 2)
+  np3 <- sum(data$priority == 3)
+  nrows <- nrow(data)
+  data$EVAL <- NA
+  data$NEWID <- NA
+  data$NEWRANK <- NA
+  if (np1 + np2 + np3 == 1) {
+    data$EVAL <- "OK, unique"
+    data$NEWID <- data$taxid
+    data$NEWRANK <- data$rank   
+  }
+  if (np1 == 1 & np2 + np3 > 0) {
+    whi1 <- which(data$priority == 1)
+    ntx <- data$taxid[whi1]
+    data$EVAL[whi1] <- "OK, Pref species"
+    data$EVAL[-whi1] <- "multihit_with_p1"
+    data$NEWID <- ntx
+    data$NEWRANK[whi1] <- data$rank[whi1]
+  }
+  if (np1 > 1) {
+    data$EVAL <- "CLASH P1"
+    data$NEWID <- NA
+    data$NEWRANK <- NA
+  }
+  if (np1 == 0 & np2 + np3 == 1 ){
+    data$EVAL <- "OK, in this db"
+    data$NEWID <- data$taxid
+    data$NEWRANK <- data$rank
+  }
+  if (np1 == 0 & np2 + np3 > 1) {
+    #to be implemented
+  }
+  data
+}
+
+########################################################
 
 multihit_list_update <- function(df){
   if (df$eval == "OK") {
@@ -329,6 +368,7 @@ multihit_list_update <- function(df){
   return(rv)
 }
 
+######################################################
 
 link_species_multihit_check <- function(df, db_name, specieslist){
   rv <- df %>% 

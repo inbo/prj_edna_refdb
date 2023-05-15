@@ -39,6 +39,7 @@ source("scripts/_functions_refdb.R")
 #variabelen projectstructuur
 db_name <- "refdb_2023-06-01"
 refdb_location <- paste0("database/", db_name)
+output_path <- "output"
 input_fasta <- paste0(refdb_location, "/", "input.fasta")
 if (!dir.exists("input")) 
   dir.create("input")
