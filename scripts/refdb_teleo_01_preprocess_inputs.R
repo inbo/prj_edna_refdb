@@ -10,11 +10,11 @@ df_species <- df_species_all %>%
 df_priority <- df_species %>% 
   select(Taxid, Priority)
 
-df_passlist <- read_sheet(metadata_gdrive_key, "Pass_list_Riaz")
+df_passlist <- read_sheet(metadata_gdrive_key, "Passlist_Teleo")
 
-df_seq_errors <- read_sheet(metadata_gdrive_key, "Sequentie_fouten")
+df_seq_errors <- read_sheet(metadata_gdrive_key, "Sequentiefouten")
 
-df_multihit <-  read_sheet(metadata_gdrive_key, "Multihitlist_riaz")
+df_multihit <-  read_sheet(metadata_gdrive_key, "Multihitlist_Teleo")
 
 df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges")
 
@@ -34,6 +34,7 @@ for (file in files) {
 }
 whidup <- which(duplicated(df_inputs_all %>%  select(genlab_id, taxid, dna_sequence)))
 df_inputs_all <- df_inputs_all[-whidup, ]
+df_inputs_all$taxid <- trimws(df_inputs_all$taxid)
 
 #find duplicate ids with different species
 dup_ids <- df_inputs_all %>% group_by(genlab_id) %>% 
@@ -42,13 +43,13 @@ dup_ids <- df_inputs_all %>% group_by(genlab_id) %>%
             aantal_taxa = n_distinct(taxid), 
             taxa = paste(unique(taxid), collapse = ",")) %>% 
   filter(aantal_seqs > 1 | aantal_taxa > 1)
-write_excel_csv2(dup_ids, paste0(path)
-
-#Er zijn nog 7 duplicaten met andere sequenties, waarvan 1 met een andere soort (zelfde genus) nl 14-015707
+write_excel_csv2(dup_ids, paste0(output_path, '/', "duplicate_sequenties_verschillend_taxid.csv"))
 
 ## CURATE INPUTS
 
+#let op: De sequentiefouten van Riaz worden hier al verwijderd in tegenstelling tot 2019
 df_inputs <- df_inputs_all %>% 
+  mutate(taxid = as.numeric(taxid)) %>% 
   filter(!(genlab_id %in% (df_seq_errors %>% pull(ENTRY_ID)))) %>% 
   filter(!taxid %in% (df_seq_errors %>% 
                         filter(TYPE == "taxid") %>% pull(TAXID)))
@@ -74,4 +75,6 @@ df_inputs <- df_inputs %>% distinct(genlab_id, taxid, AMPLICON_HASH,
 create_input_fasta(file = file.path("database", db_name, fasta_name), 
                    lowercase = TRUE, 
                    data = df_inputs)
+
+saveRDS(df_inputs, file=file.path(output_path, "df_inputs.RDS"))
 
