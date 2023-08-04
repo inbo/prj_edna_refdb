@@ -21,7 +21,6 @@ obi build_ref_db -t 0.96 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean 
 obi build_ref_db -t 0.97 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.97
 obi build_ref_db -t 0.99 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.99
 obi build_ref_db -t 1 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_1
-obi export  --fasta-output refdb/ecopcr_final_0.96 -o final_db_0.96.fasta
 obi export  --fasta-output refdb/ecopcr_final_0.97 -o final_db_0.97.fasta
 obi export  --fasta-output refdb/ecopcr_final_0.99 -o final_db_0.99.fasta
 obi export  --fasta-output refdb/ecopcr_final_1 -o final_db_1.fasta

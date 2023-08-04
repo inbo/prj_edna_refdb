@@ -9,11 +9,11 @@ inputfile <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
 
 
 ### GBIF TAXIDS
-scinames <- read_sheet(inputfile, sheet = "Soortenlijst", range = "D:H") %>% 
+scinames <- read_sheet(inputfile, sheet = "Soortenlijst", range = "A:J") %>% 
   transmute(RN = 1 + (1:nrow(.)), Taxid, 
-            scientificName = NameScientific, kingdom = NA,
+            scientificName = NameScientific, kingdom = NA, GBIF_Taxid,
             sciNameUpp = toupper((scientificName))) %>% 
-  filter(!is.na(scientificName))
+  filter(!is.na(scientificName) & Taxid > 0 & is.na(GBIF_Taxid))
 
 write_csv(scinames %>% select(scientificName, kingdom), 
           file = "output/gbif_input.csv", na = "")

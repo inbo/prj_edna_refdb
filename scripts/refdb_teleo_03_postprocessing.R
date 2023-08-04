@@ -1,6 +1,6 @@
 refdb_name <- 'refdb_teleo_2023-07-31'
-ecopcr_riaz_file <- "amplified_clean.fasta"
-merged_riaz_file <- "amplified_clean_uniq.fasta"
+ecopcr_file <- "amplified_clean.fasta"
+merged_file <- "amplified_clean_uniq.fasta"
 input_fasta_file <- "input.fasta"
 
 
@@ -10,9 +10,12 @@ library(googlesheets4)
 source("scripts/_functions_fasta.R")
 
 
-df_soortenlijst <- read_sheet(metadata_gdrive_key, sheet = "Soortenlijst") %>% 
-  filter(Priority %in% c(1,2), Taxid > 0) %>% 
+df_soortenlijst_all <- read_sheet(metadata_gdrive_key, sheet = "Soortenlijst") %>% 
+  filter(Taxid > 0) %>% 
   rename(taxid = Taxid, priority = Priority)
+
+df_soortenlijst <- df_soortenlijst_all %>% 
+  filter(priority %in% c(1,2,3,4))
 
 df_ok_merges <- read_sheet(metadata_gdrive_key, sheet = "Toegelaten_merges") 
 
@@ -23,13 +26,13 @@ input_data <-
                     is_merged_file = FALSE)
 
 ecopcr_data <- 
-  parse_refdb_fasta(file.path("database", refdb_name, ecopcr_riaz_file), 
+  parse_refdb_fasta(file.path("database", refdb_name, ecopcr_file), 
                     is_merged_file = FALSE) %>% 
   rename(taxid = TAXID,
          amplicon_hash = AMPLICON_HASH,
          count = COUNT)
 merged_data <- 
-  parse_refdb_fasta(file.path("database", refdb_name, merged_riaz_file), 
+  parse_refdb_fasta(file.path("database", refdb_name, merged_file), 
                     is_merged_file = TRUE) %>% 
   rename(merged_count = COUNT, 
          amplicon_hash = AMPLICON_HASH,
@@ -48,18 +51,18 @@ table(ecopcr_combined$obi_rank)
 table(ecopcr_combined$obi_rank, ecopcr_combined$is_merged)
 
 ### Tijdelijke details amplicons
-
-probleemsoorten1 <- ecopcr_combined %>% 
-  filter(taxid %in% c(8047,8049,8052,8056,8058,8060,44932,80720,80721,185735,185739,1042646)) %>% 
-  arrange(amplicon_hash) %>% 
-  select(genlab_id, amplicon, amplicon_hash, rank, taxid, species_name, merged_overview, obi_rank, obi_taxid)
-write_excel_csv2(probleemsoorten1, "multihit_1.csv")
-
-probleemsoorten2 <- ecopcr_combined %>%
-  filter(taxid %in% c(8056,44932,185735)) %>% 
-  arrange(amplicon_hash) %>% 
-  select(genlab_id, amplicon, amplicon_hash, rank, taxid, species_name, merged_overview, obi_rank, obi_taxid)
-write_excel_csv2(probleemsoorten2, "multihit_2.csv")
+# 
+# probleemsoorten1 <- ecopcr_combined %>% 
+#   filter(taxid %in% c(8047,8049,8052,8056,8058,8060,44932,80720,80721,185735,185739,1042646)) %>% 
+#   arrange(amplicon_hash) %>% 
+#   select(genlab_id, amplicon, amplicon_hash, rank, taxid, species_name, merged_overview, obi_rank, obi_taxid)
+# write_excel_csv2(probleemsoorten1, "multihit_1.csv")
+# 
+# probleemsoorten2 <- ecopcr_combined %>%
+#   filter(taxid %in% c(8056,44932,185735)) %>% 
+#   arrange(amplicon_hash) %>% 
+#   select(genlab_id, amplicon, amplicon_hash, rank, taxid, species_name, merged_overview, obi_rank, obi_taxid)
+# write_excel_csv2(probleemsoorten2, "multihit_2.csv")
 
 ### overzicht van soorten en families die in de ecopcr zitten (origineel, nog niet gemerged)
 
@@ -83,6 +86,7 @@ input_data %>% anti_join(ecopcr_data, by = "genlab_id") %>%
 ###############################################################################
 
 #overzicht van records die niet op soort gebracht konden worden
+#indien 0 rijen dan is alles op soort gebracht of een toegelaten genusmerge of toegelaten familymerge
 ecopcr_filtered_sp <- ecopcr_combined %>% 
   inner_join(df_soortenlijst %>% select(taxid, priority)) %>% 
   select(genlab_id, taxid, rank, priority, species_name,
@@ -93,8 +97,9 @@ ecopcr_filtered_sp <- ecopcr_combined %>%
   summarise(genlab_id = paste(genlab_id, collapse = ";")) %>% 
   arrange(obi_taxid, taxid, amplicon_hash) %>% 
   dplyr::filter(!(obi_rank == "genus" & 
-            obi_taxid %in% (df_ok_merges %>% 
-                              filter(RANK == "genus") %>% pull(TAXID))))
+                  obi_taxid %in% (df_ok_merges %>% filter(RANK == "genus") %>% pull(TAXID))), 
+                !(obi_rank == "family" & 
+                  obi_taxid %in% (df_ok_merges %>% filter(RANK == "family") %>% pull(TAXID))  ))
 
 # Kijk of er soorten mergebaar zijn (prioriteit 1)
 ecopcr_filtered_sp %>% group_by(obi_taxid) %>% 

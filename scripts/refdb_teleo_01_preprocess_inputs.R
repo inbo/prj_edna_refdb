@@ -36,6 +36,10 @@ whidup <- which(duplicated(df_inputs_all %>%  select(genlab_id, taxid, dna_seque
 df_inputs_all <- df_inputs_all[-whidup, ]
 df_inputs_all$taxid <- trimws(df_inputs_all$taxid)
 
+#Kijk of er nog prioriteit-3 (soorten die niet weerhouden worden wegens bvb hybriden) aan seq_errors moet toegevoegd worden
+df_inputs_all %>% filter(taxid %in% (df_species %>% filter(Priority == 9) %>% pull(Taxid)))
+                         
+
 #find duplicate ids with different species
 dup_ids <- df_inputs_all %>% group_by(genlab_id) %>% 
   summarise(aantal_seqs = n(), 
