@@ -198,6 +198,11 @@ select_primer_tags <- function(which = "RIAZ") {
     p2 <- "TAGAACAGGCTCCTCTAG"
     p2rc <- reverse_complement(p2)
     p1rc <- reverse_complement(p1)   
+  } else if (which == "TELEO") {
+    p1 <- "ACACCGCCCGTCACTCT"
+    p2 <- "CTTCCGGTACACTTACCRTG"
+    p2rc <- reverse_complement(p2)
+    p1rc <- reverse_complement(p1)     
   } else {
     stop("not implemented")
   }

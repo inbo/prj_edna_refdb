@@ -19,7 +19,7 @@ judge_species <- function(df) {
   print(df$obi_taxid[1])
   aantalp1 <- sum(df$priority == 1, na.rm = TRUE)
   aantalp2 <- sum(df$priority == 2, na.rm = TRUE)
-  aantalp3 <- sum(is.na(df$priority))
+  aantalp3 <- sum(is.na(df$priority) | df$priority %in% c(3:8))
   df$priority[is.na(df$priority)] <- 3
   if (aantalp1 > 0) {
     if (aantalp1 == 1) {

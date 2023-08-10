@@ -10,13 +10,13 @@ df_species <- df_species_all %>%
 df_priority <- df_species %>% 
   select(Taxid, Priority)
 
-df_passlist <- read_sheet(metadata_gdrive_key, "Passlist_Teleo")
+df_passlist <- read_sheet(metadata_gdrive_key, "Passlist_Riaz")
 
 df_seq_errors <- read_sheet(metadata_gdrive_key, "Sequentiefouten")
 
-df_multihit <-  read_sheet(metadata_gdrive_key, "Multihitlist_Teleo")
+df_multihit <-  read_sheet(metadata_gdrive_key, "Multihitlist_Riaz")
 
-df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
+df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Riaz")
 
 
 ### INPUTS
@@ -41,6 +41,10 @@ df_inputs_all <- mutate(df_inputs_all,
 whidup <- which(duplicated(df_inputs_all %>%  select(genlab_id, taxid, dna_sequence)))
 df_inputs_all <- df_inputs_all[-whidup, ]
 
+
+dup_id_diff_dna <- df_inputs_all$genlab_id[duplicated(df_inputs_all$genlab_id)]
+dup_id_diff_dna <- df_inputs_all %>% filter(genlab_id %in% dup_id_diff_dna) %>% arrange(genlab_id, source)
+write_excel_csv2(dup_id_diff_dna, file = file.path(output_path, 'duplicate_genlabid_verschillend_dna.csv'))
 
 #Kijk of er nog prioriteit-9 (soorten die niet weerhouden worden wegens bvb hybriden) aan seq_errors moet toegevoegd worden
 df_inputs_all %>% filter(taxid %in% (df_species %>% filter(Priority == 9) %>% pull(Taxid)))

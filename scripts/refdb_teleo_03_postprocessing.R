@@ -1,4 +1,5 @@
-refdb_name <- 'refdb_teleo_2023-07-31'
+
+#db_name uit initialisation
 ecopcr_file <- "amplified_clean.fasta"
 merged_file <- "amplified_clean_uniq.fasta"
 input_fasta_file <- "input.fasta"
@@ -17,22 +18,22 @@ df_soortenlijst_all <- read_sheet(metadata_gdrive_key, sheet = "Soortenlijst") %
 df_soortenlijst <- df_soortenlijst_all %>% 
   filter(priority %in% c(1,2,3,4))
 
-df_ok_merges <- read_sheet(metadata_gdrive_key, sheet = "Toegelaten_merges") 
+df_ok_merges <- read_sheet(metadata_gdrive_key, sheet = "Toegelaten_merges_Teleo") 
 
 ## ECOPCR INHOUD
 
 input_data <- 
-  parse_refdb_fasta(file.path("database", refdb_name, "kept_input.fasta"), 
+  parse_refdb_fasta(file.path("database", db_name, "kept_input.fasta"), 
                     is_merged_file = FALSE)
 
 ecopcr_data <- 
-  parse_refdb_fasta(file.path("database", refdb_name, ecopcr_file), 
+  parse_refdb_fasta(file.path("database", db_name, ecopcr_file), 
                     is_merged_file = FALSE) %>% 
   rename(taxid = TAXID,
          amplicon_hash = AMPLICON_HASH,
          count = COUNT)
 merged_data <- 
-  parse_refdb_fasta(file.path("database", refdb_name, merged_file), 
+  parse_refdb_fasta(file.path("database", db_name, merged_file), 
                     is_merged_file = TRUE) %>% 
   rename(merged_count = COUNT, 
          amplicon_hash = AMPLICON_HASH,
@@ -75,10 +76,10 @@ ecopcr_data %>%
 
 
 ### Overzicht sequenties die in input maar niet in de output zitten
-input_data %>% anti_join(ecopcr_data, by = "genlab_id") %>% 
+niet_geamplificeerd <- (input_data %>% anti_join(ecopcr_data, by = "genlab_id") %>% 
   mutate(taxid = as.numeric(TAXID)) %>% 
   left_join(df_soortenlijst %>% 
-              select(taxid, priority, NameScientific, NameEnglish)) %>%
+              select(taxid, priority, NameScientific, NameEnglish))) %>%
   write_excel_csv2(file = paste0(output_path,"/", "sequenties_niet_geamplificeerd.csv"))
 
 ###############################################################################
@@ -102,8 +103,8 @@ ecopcr_filtered_sp <- ecopcr_combined %>%
                   obi_taxid %in% (df_ok_merges %>% filter(RANK == "family") %>% pull(TAXID))  ))
 
 # Kijk of er soorten mergebaar zijn (prioriteit 1)
-ecopcr_filtered_sp %>% group_by(obi_taxid) %>% 
-  do(check_multihits2(.)) %>% 
+niet_op_soort <- (ecopcr_filtered_sp %>% group_by(obi_taxid) %>% 
+  do(check_multihits2(.))) %>% 
   write_excel_csv2(file = paste0(output_path,"/", "niet_op_soort_gebracht.csv"))
 
 ## ANDERE MOGELIJKHEID
@@ -115,8 +116,6 @@ df_spm <- ecopcr_filtered_sp %>%
    get_taxa_from_merged(., df_soortenlijst)
  }
  )
-
-#beoordeling soorten
 
 df_beoordeeld <- df_spm %>% group_by(obi_taxid) %>%
   do ({
@@ -142,12 +141,12 @@ ecopcr_soorten <- ecopcr_combined %>%
          obi_rank = paste(unique(obi_rank), collapse = ",")) %>% 
   mutate(merged = merged & taxid != obi_taxid)
 
-beoordeling <- df_beoordeeld %>% group_by(taxid, pref_taxid) %>% 
+beoordeling <- df_beoordeeld %>% group_by(taxid, pref_taxid) %>%
   summarise(oordeel = paste(unique(oordeel), collapse = "|"))
 
 
-df_multihits <- 
-  df_beoordeeld %>% group_by(taxid) %>% 
+df_multihits <-
+  df_beoordeeld %>% group_by(taxid) %>%
   do({
     taxid <- .$taxid[1]
     obitaxids <- (unique(.$obi_taxid))

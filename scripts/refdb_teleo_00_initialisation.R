@@ -16,7 +16,7 @@ source("scripts/_functions_postprocessing.R")
 #-----------
 
 #variabelen projectstructuur
-db_name <- "refdb_teleo_2023-07-31"
+db_name <- "refdb_teleo_2023-08-10"
 refdb_location <- paste0("database/", db_name)
 output_path <- paste0("database/", db_name, "/output")
 
