@@ -1,3 +1,5 @@
+##### RIAZ
+
 refdb_name <- 'refdb_2023-06-01'
 ecopcr_riaz_file <- "amplified_clean.fasta"
 merged_riaz_file <- "amplified_clean_uniq.fasta"

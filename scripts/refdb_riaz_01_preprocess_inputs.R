@@ -25,22 +25,24 @@ df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Riaz")
 files <- sort(list.files(fasta_inputs, pattern = ".fasta"))
 
 #read the source files
-df_inputs_all <- NULL
+df_inputs_all <- df_inputs_orig <- NULL
 for (file in files) {
   cat("\n\nINLEZEN VAN ", file, "\n--------------------------------\n")
   parsed <- parse_refdb_fasta(file.path(fasta_inputs, file))
   df_inputs_all <- df_inputs_all %>% 
     bind_rows(parsed)
 }
+df_inputs_orig <- df_inputs_all
 
 #nakijken of er duplicaten zijn, en zeker tegenstrijdigheden opsporen
 df_inputs_all <- mutate(df_inputs_all, 
-                        genlab_id = stringr::str_trim(genlab_id),
-                        taxid = trimws(df_inputs_all$taxid))
+                        genlab_id = substring(stringr::str_trim(genlab_id),1,19),
+                        taxid = as.numeric(trimws(df_inputs_all$taxid)))
+
+
 
 whidup <- which(duplicated(df_inputs_all %>%  select(genlab_id, taxid, dna_sequence)))
 df_inputs_all <- df_inputs_all[-whidup, ]
-
 
 dup_id_diff_dna <- df_inputs_all$genlab_id[duplicated(df_inputs_all$genlab_id)]
 dup_id_diff_dna <- df_inputs_all %>% filter(genlab_id %in% dup_id_diff_dna) %>% arrange(genlab_id, source)
@@ -48,7 +50,13 @@ write_excel_csv2(dup_id_diff_dna, file = file.path(output_path, 'duplicate_genla
 
 #Kijk of er nog prioriteit-9 (soorten die niet weerhouden worden wegens bvb hybriden) aan seq_errors moet toegevoegd worden
 df_inputs_all %>% filter(taxid %in% (df_species %>% filter(Priority == 9) %>% pull(Taxid)))
-                         
+
+#let op: De sequentiefouten van Riaz worden hier al verwijderd in tegenstelling tot 2019
+df_inputs_all <- df_inputs_all %>% 
+  mutate(taxid = as.numeric(taxid)) %>% 
+  filter(!(genlab_id %in% (df_seq_errors %>% pull(ENTRY_ID)))) %>% 
+  filter(!taxid %in% (df_seq_errors %>% 
+                        filter(TYPE == "taxid") %>% pull(TAXID)))
 
 #find duplicate ids with different species
 dup_ids <- df_inputs_all %>% group_by(genlab_id) %>% 
@@ -56,20 +64,16 @@ dup_ids <- df_inputs_all %>% group_by(genlab_id) %>%
             sources = paste(source, collapse = ","),
             aantal_taxa = n_distinct(taxid), 
             taxa = paste(unique(taxid), collapse = ",")) %>% 
-  filter(aantal_seqs > 1 | aantal_taxa > 1)
+  filter(aantal_seqs > 1 & aantal_taxa > 1)
 write_excel_csv2(dup_ids, paste0(output_path, '/', "duplicate_sequenties_verschillend_taxid.csv"))
 
 ## CURATE INPUTS
 
-#let op: De sequentiefouten van Riaz worden hier al verwijderd in tegenstelling tot 2019
-df_inputs <- df_inputs_all %>% 
-  mutate(taxid = as.numeric(taxid)) %>% 
-  filter(!(genlab_id %in% (df_seq_errors %>% pull(ENTRY_ID)))) %>% 
-  filter(!taxid %in% (df_seq_errors %>% 
-                        filter(TYPE == "taxid") %>% pull(TAXID)))
+saveRDS(df_inputs_all, paste0(output_path, '/', "inputs_before_multihit.RDS"))
 
 ### remove alle sequenties die in multihit taxa staan en waar taxid != pref_taxid
-df_inputs <- df_inputs %>% 
+#multihitlist van teleo gebruiken is OK, want multihits van riaz hoeven geen multihits te zijn bij teleo
+df_inputs <- df_inputs_all %>% 
   filter(!taxid %in% (df_multihit %>% 
                         filter(TAXID != PREF_TAXID) %>% 
                         pull(TAXID)))

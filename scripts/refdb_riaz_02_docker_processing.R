@@ -42,6 +42,7 @@ system2('docker', c("cp", paste0(docker_path, "kept_input.fasta"), refdb_locatio
 system2('docker', c("cp", paste0(docker_path, "amplified_clean.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "amplified_clean_uniq.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "final_db_0.96.fasta"), refdb_location))
+system2('docker', c("cp", paste0(docker_path, "final_db_0.97.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "final_db_0.99.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "final_db_1.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "refdb.obidms"), refdb_location))        
