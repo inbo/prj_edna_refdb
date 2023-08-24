@@ -118,61 +118,7 @@ make_shellscript_refdb <-
 }
 
 
-
-
-#' Title
-#'
-#' @param ecopcr 
-#' @param merged 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-# combine_ecpocr_with_merged <- function(ecopcr, merged) {
-#   merged <- merged %>%   
-#     mutate(merged_count = ifelse(is.na(merged_count) | merged_count == "", 
-#                                  count, 
-#                                  merged_count)) %>% 
-#     filter(merged_count > 1)  
-#   
-#   combined <- ecopcr %>% 
-#     left_join(merged %>% 
-#                 transmute(amplicon_hash, merged_count, 
-#                           merged_taxa = merged_taxid,
-#                           merged_rank = rank, merged_taxid = taxid,
-#                           merged_taxid, is_merged = 1),
-#               by = "amplicon_hash")
-#   
-#   rv <- combined %>% 
-#     transmute(LABEL = "INIT", ENTRY_ID = genlab_id, STRAND = strand,
-#               SEQ_LEN_INPUT = seq_length_ori, 
-#               SEQ_LEN_AMPLICON = nchar(dna_sequence), 
-#               AMPLICON = dna_sequence, AMPLICON_HASH,
-#               RANK = rank, TAXID = taxid, 
-#               SPECIES = species, SPECIES_NAME = species_name, 
-#               GENUS = genus, GENUS_NAME = genus_name, 
-#               FAMILY = family, FAMILY_NAME = family_name, 
-#               FORWARD_MATCH = forward_match, 
-#               FORWARD_ERROR = forward_error, 
-#               FORWARD_TM = forward_tm,
-#               REVERSE_MATCH = reverse_match, 
-#               REVERSE_ERROR = reverse_error, 
-#               REVERSE_TM = reverse_tm, 
-#               IS_MERGED, OBI_COUNT = merged_count, 
-#               OBI_RANK = merged_rank, OBI_TAXID = merged_taxid,
-#               MERGED_OVERVIEW = merged_taxa)
-#   
-#   rv <- rv %>% 
-#     mutate(OBI_COUNT = ifelse(is.na(OBI_COUNT), 1, OBI_COUNT), 
-#            OBI_RANK = ifelse(is.na(OBI_RANK), RANK, OBI_RANK), 
-#            OBI_TAXID = ifelse(is.na(OBI_TAXID), TAXID, OBI_TAXID), 
-#            IS_MERGED = ifelse(is.na(is_merged), 0, is_merged))
-#   
-#   rv
-# }
-
-
+################################################################################
 
 #' Title
 #'
@@ -192,17 +138,17 @@ combine_ecpocr_with_merged <- function(ecopcr, merged) {
   
   combined <- ecopcr %>% 
     left_join(merged %>% 
-                transmute(amplicon_hash, merged_count, 
+                transmute(dna_hash, merged_count, 
                           merged_taxa = merged_taxid,
                           merged_rank = rank, merged_taxid = taxid,
                           merged_taxid, IS_MERGED = 1),
-              by = "amplicon_hash")
+              by = "dna_hash")
   
   rv <- combined %>% 
-    transmute(label = "INIT", genlab_id, strand,
+    transmute(label = "INIT", genbank_id, strand,
               seq_len_input = seq_length_ori, 
               seq_len_amplicon = nchar(dna_sequence), 
-              amplicon = dna_sequence, amplicon_hash,
+              amplicon = dna_sequence, dna_hash,
               rank, taxid = as.numeric(taxid), 
               species, species_name, 
               genus = as.numeric(genus), genus_name, 
@@ -379,7 +325,7 @@ link_species_multihit_check <- function(df, db_name, specieslist){
               by = c("pref_taxid" = "taxid")) %>% 
     transmute(label = db_name,  remark = clash, 
               taxid_name, taxid, 
-              pref_taxid, pref_taxid_name, genlab_id)
+              pref_taxid, pref_taxid_name, genbank_id)
   
   rv
 }

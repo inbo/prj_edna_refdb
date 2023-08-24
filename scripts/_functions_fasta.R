@@ -80,7 +80,7 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
       out <- c(out,  'merged_count' = merged_count)     
     }
   }
-  out <- c(out,  'genlab_id' = recordname)
+  out <- c(out,  'genbank_id' = recordname)
   out <- c(out, "taxid" = taxid)
   out <- c(out, 'dna_sequence' = sequentie)
 
@@ -147,7 +147,7 @@ parse_refdb_fasta <-
     if (i == 1) { 
       test <<- parsed_record
       cat("\n\nfirst record parsed:\n-------------------------\n")
-      cat("GENLAB_ID:", parsed_record$genlab_id, "\n")
+      cat("GENBANK_ID:", parsed_record$genbank_id, "\n")
       cat("TAXID:    ", parsed_record$taxid, "\n")
       cat("LEN:      ", nchar(parsed_record$dna_sequence), "\n")
       cat("SEQ:      ", substring(parsed_record$dna_sequence, 1, 30), "...\n")
@@ -178,7 +178,7 @@ parse_refdb_fasta <-
 create_input_fasta <- function(file, data, lowercase = FALSE, 
                                seq = "dna_sequence",
                                taxid = "taxid",
-                               entry_id = "genlab_id") {
+                               entry_id = "genbank_id") {
   if(lowercase) {
     data$SEQ_12S <-  tolower(data[[seq]])
   } else {

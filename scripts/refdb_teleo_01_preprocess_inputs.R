@@ -1,5 +1,9 @@
 
-## GOOGLESHEET REFDB
+
+source("scripts/refdb_teleo_00_initialisation.R")
+
+## SOORTENLIJST
+## --------------
 
 df_species_all <- read_sheet(metadata_gdrive_key, "Soortenlijst") %>% 
   mutate(ROWNR = 1:n())
@@ -10,7 +14,27 @@ df_species <- df_species_all %>%
 df_priority <- df_species %>% 
   select(Taxid, Priority)
 
+## INPUTS
+## --------
+
+files <- sort(list.files(fasta_inputs, pattern = ".fasta"))
+
+df_inputs_orig <- NULL
+for (file in files) {
+  cat("\n\nINLEZEN VAN ", file, "\n--------------------------------\n")
+  parsed <- parse_refdb_fasta(file.path(fasta_inputs, file))
+  df_inputs_orig <- df_inputs_orig %>% 
+    bind_rows(parsed)
+}
+
+## AFGELEIDE FILES
+## ---------------
+
+#nakijken of de sequenties wel gevonden worden (voorlopig 21/08/23 is dat niet het geval)
 df_passlist <- read_sheet(metadata_gdrive_key, "Passlist_Teleo")
+df_passlist <- df_inputs_orig %>% 
+  filter(genbank_id %in% df_passlist$ENTRY_ID) %>% 
+  mutate(taxid = as.numeric(taxid))
 
 df_seq_errors <- read_sheet(metadata_gdrive_key, "Sequentiefouten")
 
@@ -22,28 +46,16 @@ df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
 ### INPUTS
 
 #get the source files
-files <- sort(list.files(fasta_inputs, pattern = ".fasta"))
 
 #read the source files
-df_inputs_all <- NULL
-for (file in files) {
-  cat("\n\nINLEZEN VAN ", file, "\n--------------------------------\n")
-  parsed <- parse_refdb_fasta(file.path(fasta_inputs, file))
-  df_inputs_all <- df_inputs_all %>% 
-    bind_rows(parsed)
-}
-df_inputs_orig <- df_inputs_all
 
 #nakijken of er duplicaten zijn, en zeker tegenstrijdigheden opsporen
-df_inputs_all <- mutate(df_inputs_all, 
-                        genlab_id = stringr::str_trim(genlab_id),
-                        taxid = trimws(df_inputs_all$taxid))
-# df_inputs_all$genlab_id <- ifelse(substring(df_inputs_all$source, 1, 4) == "Copy", 
-#                                   paste0(df_inputs_all$genlab_id,'R'),
-#                                   df_inputs_all$genlab_id)
+df_inputs_all <- df_inputs_orig %>% 
+  mutate(genbank_id = stringr::str_trim(genbank_id),
+         taxid = trimws(df_inputs_orig$taxid))
 
-whidup <- which(duplicated(df_inputs_all %>%  select(genlab_id, taxid, dna_sequence)))
-df_inputs_all <- df_inputs_all[-whidup, ]
+whidup <- which(duplicated(df_inputs_all %>%  select(genbank_id, taxid, dna_sequence)))
+if (length(whidup)) df_inputs_all <- df_inputs_all[-whidup, ]
 
 
 ## CURATE INPUTS
@@ -53,7 +65,7 @@ df_inputs_all <- df_inputs_all[-whidup, ]
 #Haal foutieve sequenties uit 
 df_inputs <- df_inputs_all %>% 
   mutate(taxid = as.numeric(taxid)) %>% 
-  filter(!(genlab_id %in% (df_seq_errors %>% pull(ENTRY_ID)))) %>% 
+  filter(!(genbank_id %in% (df_seq_errors %>% pull(ENTRY_ID)))) %>% 
   filter(!taxid %in% (df_seq_errors %>% 
                         filter(TYPE == "taxid") %>% pull(TAXID)))
 
@@ -62,7 +74,7 @@ df_inputs %>% filter(taxid %in% (df_species %>% filter(Priority == 9) %>% pull(T
 
 
 #find duplicate ids with different species
-dup_ids <- df_inputs %>% group_by(genlab_id) %>% 
+dup_ids <- df_inputs %>% group_by(genbank_id) %>% 
   summarise(aantal_seqs = n(), 
             sources = paste(source, collapse = ","),
             aantal_taxa = n_distinct(taxid), 
@@ -83,7 +95,7 @@ df_inputs <- df_inputs%>%
 df_inputs <- df_inputs %>% bind_rows(df_passlist) 
 
 ### remove full duplicates
-df_inputs <- df_inputs %>% distinct(genlab_id, taxid, AMPLICON_HASH, 
+df_inputs <- df_inputs %>% distinct(genbank_id, taxid, DNA_HASH, 
                                     .keep_all = TRUE)
 
 ## create fasta input for ecopcr (obitools2)

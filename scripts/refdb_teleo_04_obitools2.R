@@ -112,12 +112,12 @@ table(ecopcr_combined2$obi_rank, ecopcr_combined2$is_merged)
 
 ecopcr_filtered_sp2 <- ecopcr_combined2 %>% 
   inner_join(df_soortenlijst %>% select(taxid, priority)) %>% 
-  select(genlab_id, taxid, rank, priority, species_name,
+  select(genbank_id, taxid, rank, priority, species_name,
          amplicon_hash, obi_rank, obi_taxid, genus_name, family_name,
          merged_overview, obi_count) %>% 
   filter(!(obi_rank %in% c("subspecies", "species"))) %>% 
-  group_by(across(-genlab_id)) %>% 
-  summarise(genlab_id = paste(genlab_id, collapse = ";")) %>% 
+  group_by(across(-genbank_id)) %>% 
+  summarise(genbank_id = paste(genbank_id, collapse = ";")) %>% 
   arrange(obi_taxid, taxid, amplicon_hash) %>% 
   dplyr::filter(!(obi_rank == "genus" & 
                     obi_taxid %in% (df_ok_merges %>% filter(RANK == "genus") %>% pull(TAXID))), 

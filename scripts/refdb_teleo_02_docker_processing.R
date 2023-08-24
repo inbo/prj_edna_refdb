@@ -37,7 +37,6 @@ system2('docker', c('exec', docker_container_name, 'bash', '-c', docker_script))
 ##return results
 system2('docker', c("cp", paste0(docker_path, "logfile.txt"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, obi_script), refdb_location))
-
 system2('docker', c("cp", paste0(docker_path, "kept_input.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "amplified.fasta"), refdb_location))
 system2('docker', c("cp", paste0(docker_path, "amplified_clean.fasta"), refdb_location))
@@ -48,9 +47,5 @@ system2('docker', c("cp", paste0(docker_path, "refdb.obidms"), refdb_location))
 
 ##exit container
 system2("powershell", paste("docker stop ", docker_container_name))       
-
-
-df_inputs %>% filter(taxid == 96503) %>% view()
-df_inputs %>% filter(taxid == '171144') %>% view() #fout in source, spatie achter taxid
 
 
