@@ -56,23 +56,8 @@ write_rds(ecopcr_combined, file.path("database", db_name, "ecopcr_combined.RDS")
 write_rds(df_multihits, file.path("database", db_name, "df_multihtitlist.RDS"))
 
 table(ecopcr_combined$is_merged)
-table(ecopcr_combined$obi_rank)
 table(ecopcr_combined$obi_rank, ecopcr_combined$is_merged)
 
-
-### Tijdelijke details amplicons
-# 
-# probleemsoorten1 <- ecopcr_combined %>% 
-#   filter(taxid %in% c(8047,8049,8052,8056,8058,8060,44932,80720,80721,185735,185739,1042646)) %>% 
-#   arrange(amplicon_hash) %>% 
-#   select(genbank_id, amplicon, amplicon_hash, rank, taxid, species_name, merged_overview, obi_rank, obi_taxid)
-# write_excel_csv2(probleemsoorten1, "multihit_1.csv")
-# 
-# probleemsoorten2 <- ecopcr_combined %>%
-#   filter(taxid %in% c(8056,44932,185735)) %>% 
-#   arrange(amplicon_hash) %>% 
-#   select(genbank_id, amplicon, amplicon_hash, rank, taxid, species_name, merged_overview, obi_rank, obi_taxid)
-# write_excel_csv2(probleemsoorten2, "multihit_2.csv")
 
 ### overzicht van soorten en families die in de ecopcr zitten (origineel, nog niet gemerged)
 
@@ -83,17 +68,11 @@ ecopcr_data %>%
   arrange(desc(verschillende_taxa)) %>% 
   write_excel_csv2(file = paste0(output_path,"/", "taxa_in_ecopcr.csv"))
 
-
-
-
 #### Overzicht sequenties die in input maar niet in de output zitten
-niet_geamplificeerd <- (input_data %>% anti_join(ecopcr_data, by = "genbank_id") %>% 
+niet_geamplificeerd <- input_data %>% anti_join(ecopcr_data, by = "genbank_id") %>% 
                           mutate(taxid = as.numeric(TAXID)) %>% 
                           left_join(df_soortenlijst %>% 
-                                      select(taxid, priority, NameScientific, NameEnglish))) %>%
-  write_excel_csv2(file = paste0(output_path,"/", "sequenties_niet_geamplificeerd.csv"))
-
-
+                                      select(taxid, priority, NameScientific, NameEnglish))
 mtch <- NULL
 for (i in seq_len(nrow(niet_geamplificeerd)))
   mtch[i] <- find_matching_seq(niet_geamplificeerd$dna_sequence[i])
@@ -105,23 +84,11 @@ view(geweigerd_ondanks_match)
 write_excel_csv2(geweigerd_ondanks_match, 
                  file = file.path(output_path, "geweigerd_ondanks_perfecte_match.csv"))
 
-#tijdelijke check (mag weg)
-# before_data <- 
-#   parse_refdb_fasta(file.path("database", db_name, before_ecopcr_file), 
-#                     is_merged_file = FALSE) %>% 
-#   rename(taxid = TAXID,
-#          dna_hash = DNA_HASH,
-#          count = COUNT)
-# #species, genus en family  moet gekend zijn voor de ecopcr, soms is species wel gekend, maar genus of familie niet, en die gevallen worden verwijderd
-# lost_in_cleaning <- before_data %>% filter(!(genbank_id %in% ecopcr_data$genbank_id))
-# write_excel_csv2(lost_in_cleaning, 
-#                  file = file.path(output_path, "geweigerd_onvolledige_taxdump_hierarchie.csv"))
-
-
-
 ###############################################################################
 ### CONFLICTEN OPSPOREN
 ###############################################################################
+
+#importeren data
 
 from_rds <- FALSE
 if (from_rds) {
@@ -138,7 +105,6 @@ if (from_rds) {
   df_multihits <- read_rds(file.path("database", db_name, "df_multihtitlist.RDS"))
   
 }
-
 
 #overzicht van records die niet op soort gebracht konden worden
 #indien 0 rijen dan is alles op soort gebracht of een toegelaten genusmerge of toegelaten familymerge
@@ -170,7 +136,7 @@ df_beoordeeld <-
     judge_species(.)    
   })
   
-write_excel_csv2(df_beoordeeld, file = paste0(output_path,"/", "niet_op_soort_gebracht_alternatief.csv"))
+write_excel_csv2(df_beoordeeld, file = paste0(output_path,"/", "niet_op_soort_gebracht.csv"))
 
 ###################################################################
 ### SOORTENEVALUATIE
@@ -234,9 +200,10 @@ df_soortenevaluatie <- df_soortenlijst %>%
                                        Pref_NameEnglish = NameEnglish, 
                                        Pref_NameScientific = NameScientific), 
             by = c("pref_taxid" = "taxid")) %>% 
+  select(-merged) %>% 
   left_join(df_conflicts)
 
-write_excel_csv2(df_soortenevaluatie, file = paste0(output_path,"/", "soortenevaluatie_ruw.csv"))
+write_excel_csv2(df_soortenevaluatie, file = paste0(output_path,"/", "soortenevaluatie_teleo.csv"))
 
 
 

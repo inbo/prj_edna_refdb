@@ -49,5 +49,10 @@ pscommand_delete <- paste("docker", "rm", docker_container_name)
 pscommand_run <- paste("docker run --rm -i -d --name", 
                        docker_container_name, image_name)# -i for interactive mode, -d for detached mode (run in background) 
 
+if (!dir.exists(file.path("database", db_name))) {
+  dir.create(file.path("database", db_name))  
+  dir.create(file.path("database", db_name, "output"))
+}
+
 
 

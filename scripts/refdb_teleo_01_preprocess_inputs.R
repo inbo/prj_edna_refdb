@@ -35,6 +35,7 @@ df_passlist <- read_sheet(metadata_gdrive_key, "Passlist_Teleo")
 df_passlist <- df_inputs_orig %>% 
   filter(genbank_id %in% df_passlist$ENTRY_ID) %>% 
   mutate(taxid = as.numeric(taxid))
+nrow(passlist)
 
 df_seq_errors <- read_sheet(metadata_gdrive_key, "Sequentiefouten")
 
@@ -44,8 +45,6 @@ df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
 
 
 ### INPUTS
-
-#get the source files
 
 #read the source files
 
@@ -80,9 +79,9 @@ dup_ids <- df_inputs %>% group_by(genbank_id) %>%
             aantal_taxa = n_distinct(taxid), 
             taxa = paste(unique(taxid), collapse = ",")) %>% 
   filter(aantal_seqs > 1 & aantal_taxa > 1)
-write_excel_csv2(dup_ids, paste0(output_path, '/', "duplicate_sequenties_verschillend_taxid.csv"))
+#write_excel_csv2(dup_ids, paste0(output_path, '/', "duplicate_sequenties_verschillend_taxid.csv"))
 
-saveRDS(df_inputs, paste0(output_path, '/', "inputs_before_multihit.RDS"))
+saveRDS(df_inputs, file.path("database", db_name, "inputs_before_multihit.RDS"))
 
 ### remove alle sequenties die in multihit taxa staan en waar taxid != pref_taxid
 #multihitlist van teleo gebruiken is OK, want multihits van riaz hoeven geen multihits te zijn bij teleo
@@ -107,5 +106,5 @@ create_input_fasta(file = file.path("database", db_name, fasta_name),
                    lowercase = TRUE, 
                    data = df_inputs)
 
-saveRDS(df_inputs, file=file.path(output_path, "df_inputs.RDS"))
+saveRDS(df_inputs, file=file.path("database", db_name, "df_inputs.RDS"))
 

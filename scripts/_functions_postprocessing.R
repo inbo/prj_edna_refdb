@@ -10,17 +10,19 @@ get_taxa_from_merged <- function(x, soortenlijst) {
   df$taxid <- as.numeric(df$taxid)
   df$aantal <- as.numeric(df$aantal)
   df <- left_join(df, soortenlijst %>% select(taxid, priority, NameScientific, NameEnglish), by = "taxid")
-  df <- df %>% group_by(taxid, priority, NameScientific, NameEnglish) %>% summarise(sum_aantal = sum(aantal))
+  df <- df %>% 
+    group_by(taxid, priority, NameScientific, NameEnglish) %>% 
+    summarise(sum_aantal = sum(aantal), .groups = "drop")
 }
 #get_taxa_from_merged("{'9823': 1, '273789': 1, '41807': 1, '159856': 1}", df_soortenlijst)
 
 
 judge_species <- function(df) {
-  print(df$obi_taxid[1])
   aantalp1 <- sum(df$priority == 1, na.rm = TRUE)
   aantalp2 <- sum(df$priority == 2, na.rm = TRUE)
   aantalp3 <- sum(is.na(df$priority) | df$priority %in% c(3:8))
   df$priority[is.na(df$priority)] <- 3
+  df$oordeel <- NA
   if (aantalp1 > 0) {
     if (aantalp1 == 1) {
       pref_taxid <- df$taxid[df$priority == 1]
