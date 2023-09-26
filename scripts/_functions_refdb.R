@@ -131,16 +131,14 @@ make_shellscript_refdb <-
 #' @examples
 combine_ecpocr_with_merged <- function(ecopcr, merged) {
   merged <- merged %>%   
-    mutate(merged_count = ifelse(is.na(merged_count) | merged_count == "", 
-                                 count, 
-                                 merged_count)) %>% 
+    mutate(merged_count = count) %>% 
     filter(merged_count > 1)  
   
   combined <- ecopcr %>% 
     left_join(merged %>% 
                 transmute(dna_hash, merged_count, 
                           merged_taxa = merged_taxid,
-                          merged_rank = rank, merged_taxid = taxid,
+                          merged_rank = rank, obi_taxid = taxid,
                           merged_taxid, IS_MERGED = 1),
               by = "dna_hash")
   
@@ -149,14 +147,14 @@ combine_ecpocr_with_merged <- function(ecopcr, merged) {
               seq_len_input = seq_length_ori, 
               seq_len_amplicon = nchar(dna_sequence), 
               amplicon = dna_sequence, dna_hash,
-              rank, taxid = as.numeric(taxid), 
+              rank, taxid = as.numeric(taxid),
               species, species_name, 
               genus = as.numeric(genus), genus_name, 
               family = as.numeric(family), family_name, 
               forward_match, forward_error, forward_tm,
               reverse_match, reverse_error, reverse_tm, 
               is_merged = IS_MERGED, obi_count = as.numeric(merged_count), 
-              obi_rank = merged_rank, obi_taxid = as.numeric(merged_taxid),
+              obi_rank = merged_rank, obi_taxid = as.numeric(obi_taxid),
               merged_overview = merged_taxa)
   
   rv <- rv %>% 
@@ -331,3 +329,8 @@ link_species_multihit_check <- function(df, db_name, specieslist){
 }
 
 #LABEL	REMARK	BLOCKED_ON	SCI_NAME	DUTCH_NAME	ENG_NAME	TAXID	PREF_TAXID	SCI_NAME_PREF
+
+##########################################################
+
+
+

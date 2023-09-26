@@ -10,7 +10,8 @@ fasta_inputs <- file.path(root_gdrive, 'input_seqs', 'import')
 
 teleo_path <- "C:\\_GIT_PROJECTS\\prj_edna_refdb\\database\\refdb_teleo_2023-09-01"
 riaz_path  <- "C:\\_GIT_PROJECTS\\prj_edna_refdb\\database\\refdb_riaz_2023-09-01"
-
+inputchecks_name <- "inputchecks_2023_09_01.Rdata"
+source("scripts/_functions_fasta.R")
 
 files <- sort(list.files(fasta_inputs, pattern = ".fasta"))
  all_inputs <- NULL
@@ -20,14 +21,25 @@ for (file in files) {
   all_inputs <- all_inputs %>% 
     bind_rows(parsed)
 }
+ 
+find_fragments <- function(x) {
+  
+}
 
 amplified_teleo <- parse_refdb_fasta(file.path(teleo_path, 'amplified.fasta'))
 amplified_riaz  <- parse_refdb_fasta(file.path(riaz_path,  'amplified.fasta'))
 amplified_clean_teleo <- parse_refdb_fasta(file.path(teleo_path, 'amplified_clean.fasta'))
 amplified_clean_riaz  <- parse_refdb_fasta(file.path(riaz_path,  'amplified_clean.fasta'))
+#amplified_clean_uniq_teleo <- parse_refdb_fasta(file.path(teleo_path, 'amplified_clean_uniq.fasta'))
+#amplified_clean_uniq_riaz  <- parse_refdb_fasta(file.path(riaz_path,  'amplified_clean_uniq.fasta'))
+refdb_teleo <- parse_refdb_fasta(file.path(teleo_path, 'final_db_0.99.fasta'))
+refdb_riaz  <- parse_refdb_fasta(file.path(riaz_path,  'final_db_0.99.fasta'))
 
-save(all_inputs, amplified_teleo, amplified_riaz, amplified_clean_teleo, amplified_clean_riaz, file = 'inputchecks.Rdata')
-#load(inputchecks.Rdata)
+save(all_inputs, amplified_teleo, amplified_riaz,
+     amplified_clean_teleo, amplified_clean_riaz, 
+#    amplified_clean_uniq_teleo, amplified_clean_uniq_riaz, 
+     refdb_teleo, refdb_riaz, file = inputchecks_name)
+#load(inputchecks_name)
 
 whidup <- which(duplicated(all_inputs$genbank_id))
 all_inputs %>% 

@@ -30,4 +30,25 @@ linked <- scinames %>% select(-kingdom, scientificNameINBO = scientificName) %>%
             Kingdom = kingdom, Phylum = phylum, Class = class, 
             Order = order, Family = family, Genus = genus, Species = species)
 write_excel_csv2(linked, file = "output/gbif_to_specieslist.csv")
-  
+
+############################
+#### MANUEEL ##############
+############################
+
+indata <- readLines(n = 11)
+Acipenser oxyrinchus oxyrinchus
+Acipenser oxyrinchus desotoi
+Carassius auratus auratus
+Carassius auratus grandoculis
+Carassius auratus ssp. 'Pingxiang'
+Carassius auratus 'high back crucian carp'
+Barbatula aff. barbatula lineage I
+Barbatula aff. barbatula lineage II
+Salmo caspius
+Alburnus chalcoides aralensis
+Paramisgurnus dabryanus ssp. DLY-2014
+
+write_csv(data.frame(scientificName = indata, kingdom = NA), 
+          file = "output/sp_20230829b.csv")
+# TAAK: export naar gbif en resultaat opslaan als csv
+gbif_names <- read_csv("output/gbif_result_20230829b.csv")

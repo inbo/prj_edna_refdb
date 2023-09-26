@@ -77,8 +77,8 @@ RUN echo 'export PATH="$PATH:/app/obitools3/bin"' >> ~/.bashrc
 COPY welcome.sh /app/welcome.sh
 
 # Copy testfastq into container
-COPY testfwd.fastq /app/testfwd.fastq
-COPY testrev.fastq /app/testrev.fastq
+#COPY testfwd.fastq /app/testfwd.fastq
+#COPY testrev.fastq /app/testrev.fastq
 
 #Copy to run non-interactively en execute when building the image
 #COPY generate_refdb.sh /app/generate_refdb.sh

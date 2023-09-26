@@ -37,7 +37,7 @@ sha1hash <- function(x) {
 #' rec2[2] <- "CAAAGGCTTGGTCCTGACTTTATTATCAACTTTAGCCAAACTT"
 #' testrecord2 <- parse_fasta_record(rec2, is_merged = FALSE)
 
-parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
+parse_fasta_record_old <- function(record, is_merged, dna_type = "uppercase") {
   out <- NULL
   
   #>>> verkrijg de sequentie
@@ -103,7 +103,56 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
 }
 
 ###########################################
+## Experimentele snellere functies
 
+parse_fasta_record <- function(metadata, sequence) {
+  sequence <- toupper(sequence)
+  metadata <- unlist(str_split(metadata, pattern = "; "))
+  metadata[length(metadata)] <- str_replace(metadata[length(metadata)], ";", "")
+  firstpart <- unlist(str_split(metadata[1], " "))
+  metadata[1] <- paste0("genbank_id=",substring(firstpart[1], 2))
+  metadata <- c(metadata, firstpart[2])
+  metadata <- t(str_split(metadata, "=", simplify = TRUE))
+  rvdata <- metadata[2, , drop=FALSE]
+  colnames(rvdata) <- tolower(metadata[1,])
+  rvdata <- cbind(rvdata, dna_sequence = sequence)
+  as.data.frame(rvdata)
+}
+#parse_fasta_record_temp(f1$metadata, f1$sequence)
+
+
+parse_refdb_fasta <- function(file) {
+  #keep sourcefile information
+  lastslash <- max(gregexpr("/", file)[[1]])
+  filestem <- substring(file, lastslash+1)
+  inputfilestem <- gsub(".fasta", "", filestem)
+  content <- readLines(file)
+  newrecords <- which(startsWith(content, ">"))
+  endrecords <- c(newrecords[-1]-1, length(content))
+  record <- data.frame(metadata = content[newrecords], sequence = NA)
+  parsed <- NULL
+  nrw <- nrow(record)
+  modulo <- ceiling(nrw/100)
+  cat("inlezen van ", nrw, " records\n")
+  for (i in 1:nrw) {
+    if (i %% modulo == 0) cat ("#")
+    if (i == nrw) cat("\n")
+    metadata <- content[newrecords[i]]
+    sequence <- paste(content[(newrecords[i]+1):endrecords[i]], collapse = "")
+    #parsed <- bind_rows(parsed, parse_fasta_record_temp(metadata, sequence))
+    parsed[[i]]  <- parse_fasta_record(metadata, sequence)
+  }
+  #parserecord <<- parsed
+  rv <- bind_rows(parsed)
+  rv$source <- inputfilestem
+  rv$dna_hash <- sha1hash(rv$dna_sequence)
+  #parsed
+  rv
+}
+#system.time(test <- parse_refdb_fasta_temp("amplified_clean_uniq_test.fasta"))
+#system.time(test2 <- parse_refdb_fasta("amplified_clean_uniq_test.fasta"))
+
+###########################################
 
 #' Title
 #'
@@ -114,7 +163,7 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
 #' @export
 #'
 #' @examples
-parse_refdb_fasta <- 
+parse_refdb_fasta_old <- 
   function(file, is_merged_file = FALSE, dna_type = "uppercase") {
   ### >>>lees de file lijn per lijn in
   content <- readLines(file)
@@ -299,24 +348,23 @@ create_random_seq <- function(size = 100, prob = c(A=0.25, C=0.25, G=0.25, T=0.2
 #' @export
 #'
 #' @examples
-find_matching_seq <- function(dna, which = "TELEO") {
+#' seq <- "ACTGGGATTAGATACCCCATCGATCGATCGATCGATCGATCGATCGATCGCTAGAGGAGCCTGTTCTAAATTCCGGAATTCCGGACACCGCCCGTCACTCTAAATTTCCCGGGAAATTTCCCGGGCATGGTAAGTGTACCGGAAG"
+#' find_matching_seq(seq)
+find_matching_seq <- function(dna) {
   dna <- toupper(dna)
-  if (toupper(which) == 'RIAZ') {
-    R1_match <- regexpr(pattern = "ACTGGGATTAGATACCCC", text = dna)
-    R2_match <- regexpr(pattern = "CTAGAGGAGCCTGTTCTA", text = dna)
-    rv <- paste0(as.numeric(R1_match>0), "_", as.numeric(R2_match>0), 
-                 "_len:",R2_match - R1_match )
-  } else if (toupper(which) == "TELEO") {
-    T1_match <- regexpr(pattern = "ACACCGCCCGTCACTCT",  text = dna)
-    T2a_match <- regexpr(pattern = "CATGGTAAGTGTACCGGAAG", text = dna)
-    T2b_match <- regexpr(pattern = "CACGGTAAGTGTACCGGAAG", text = dna)
-    rv <- paste0(as.numeric(T1_match>0), "_", 
-                 max(T2a_match>0, T2b_match>0), 
-                 "_len:", max(T2a_match, T2b_match) - T1_match + 1)
-  } else {
-    stop('which is not TELEO or RIAZ')
-  }
-  rv
+  R1_match <- regexpr(pattern = "ACTGGGATTAGATACCCC", text = dna)
+  R2_match <- regexpr(pattern = "CTAGAGGAGCCTGTTCTA", text = dna)
+  T1_match <- regexpr(pattern = "ACACCGCCCGTCACTCT",  text = dna)
+  T2a_match <- regexpr(pattern = "CATGGTAAGTGTACCGGAAG", text = dna)
+  T2b_match <- regexpr(pattern = "CACGGTAAGTGTACCGGAAG", text = dna)
+  T2_match = max(-1, T2a_match, T2b_match)
+  len_riaz <-  ifelse(R1_match > 0 & R2_match > 0, R2_match + 18 - R1_match, -1)
+  len_teleo <- ifelse(T1_match > 0 & T2_match > 0, T2_match + 20 - T1_match, -1)
+  c(R1 = R1_match, R2 = R2_match, R_len = len_riaz,  
+    R_eval = as.numeric(paste0(as.numeric(R1_match>0), as.numeric(R2_match>0))),
+    T1 = T1_match, T2 = T2_match, T_len = len_teleo, 
+    T_eval = as.numeric(paste0(as.numeric(T1_match>0), as.numeric(T2_match>0)))
+    )
 }
 
 
