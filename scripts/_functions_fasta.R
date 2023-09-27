@@ -132,7 +132,7 @@ parse_refdb_fasta <- function(file) {
   record <- data.frame(metadata = content[newrecords], sequence = NA)
   parsed <- NULL
   nrw <- nrow(record)
-  modulo <- ceiling(nrw/100)
+  modulo <- ceiling(nrw/50)
   cat("inlezen van ", nrw, " records\n")
   for (i in 1:nrw) {
     if (i %% modulo == 0) cat ("#")

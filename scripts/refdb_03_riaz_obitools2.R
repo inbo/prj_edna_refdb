@@ -125,6 +125,7 @@ df_soortenevaluatie2 <- genereer_soortenevaluatie(ecopcr_combined2,
 write_excel_csv2(df_soortenevaluatie2, 
                  file = file.path('database', db_name_riaz, "soortenevaluatie_riaz_obi2.csv"))
 
+#--------------------------------------------------------------------------
 
 
 
@@ -132,69 +133,69 @@ write_excel_csv2(df_soortenevaluatie2,
 
 
 
-
-
-
-
-
-
-ecopcr_file <- "amplified_clean2.fasta" #zelfde filename ook indien niet gecleand
-merged_file <- "amplified_clean_uniq2.fasta"
-input_fasta_file <- "input.fasta"
-
-df_soortenlijst_all <- read_sheet(metadata_gdrive_key, sheet = "Soortenlijst") %>% 
-  filter(Taxid > 0) %>% 
-  rename(taxid = Taxid, priority = Priority)
-df_soortenlijst <- df_soortenlijst_all %>% 
-  filter(priority %in% c(1,2,3,4))
-df_ok_merges <- read_sheet(metadata_gdrive_key, sheet = "Toegelaten_merges_Riaz") %>% 
-  rename(taxid = TAXID, rank = RANK)
-df_multihits <- read_sheet(metadata_gdrive_key, sheet = "Multihitlist_Riaz") %>% 
-  rename(taxid = TAXID, pref_taxid = PREF_TAXID)
-
-## ECOPCR INHOUD
-
-input_data2 <- 
-  parse_refdb_fasta(file.path("database", db_name, "kept_input.fasta"), 
-                    is_merged_file = FALSE)
-
-input_data_before_multihit <- readRDS(file.path("database", db_name, 'inputs_before_multihit.RDS'))
-
-ecopcr_data2 <- 
-  parse_refdb_fasta(file.path("database", db_name, ecopcr_file), 
-                    is_merged_file = FALSE) %>% 
-  rename(taxid = taxid,
-         dna_hash = DNA_HASH)
-
-merged_data2 <- merged_data2_backup <- 
-  parse_refdb_fasta(file.path("database", db_name, merged_file), 
-                    is_merged_file = TRUE) %>% 
-  rename(merged_count = merged_count, 
-         dna_hash = DNA_HASH,
-         merged_taxid = merged_taxid,
-         taxid = taxid)
-merged_data2 <- merged_data2 %>% 
-  mutate(merged_taxid = str_replace(merged_taxid, "\\{", "{'"),
-         merged_taxid = str_replace_all(merged_taxid, ":", "':"),
-         merged_taxid = str_replace_all(merged_taxid, ", ", ", '"))
-
-ecopcr_combined2 <- combine_ecpocr_with_merged(ecopcr_data2, merged_data2) 
-
-table(ecopcr_combined2$is_merged)
-table(ecopcr_combined2$obi_rank)
-table(ecopcr_combined2$obi_rank, ecopcr_combined2$is_merged)
-
-
-df_conflicts2 <- genereer_conflicten(ecopcr_combined2, df_soortenlijst, df_ok_merges)
-write_excel_csv2(df_conflicts2, file = paste0(output_path,"/", "niet_op_soort_gebracht_obi2.csv"))
-
-df_soortenevaluatie2 <- genereer_soortenevaluatie(ecopcr_combined2, 
-                                                  merged_data2,
-                                                  input_data_before_multihit,
-                                                  df_soortenlijst, 
-                                                  df_multihits, 
-                                                  df_ok_merges, 
-                                                  df_conflicts2)
-write_excel_csv2(df_soortenevaluatie2, file = paste0(output_path,"/", "soortenevaluatie_riaz_obi2.csv"))
-
+# 
+# 
+# 
+# 
+# 
+# 
+# ecopcr_file <- "amplified_clean2.fasta" #zelfde filename ook indien niet gecleand
+# merged_file <- "amplified_clean_uniq2.fasta"
+# input_fasta_file <- "input.fasta"
+# 
+# df_soortenlijst_all <- read_sheet(metadata_gdrive_key, sheet = "Soortenlijst") %>% 
+#   filter(Taxid > 0) %>% 
+#   rename(taxid = Taxid, priority = Priority)
+# df_soortenlijst <- df_soortenlijst_all %>% 
+#   filter(priority %in% c(1,2,3,4))
+# df_ok_merges <- read_sheet(metadata_gdrive_key, sheet = "Toegelaten_merges_Riaz") %>% 
+#   rename(taxid = TAXID, rank = RANK)
+# df_multihits <- read_sheet(metadata_gdrive_key, sheet = "Multihitlist_Riaz") %>% 
+#   rename(taxid = TAXID, pref_taxid = PREF_TAXID)
+# 
+# ## ECOPCR INHOUD
+# 
+# input_data2 <- 
+#   parse_refdb_fasta(file.path("database", db_name, "kept_input.fasta"), 
+#                     is_merged_file = FALSE)
+# 
+# input_data_before_multihit <- readRDS(file.path("database", db_name, 'inputs_before_multihit.RDS'))
+# 
+# ecopcr_data2 <- 
+#   parse_refdb_fasta(file.path("database", db_name, ecopcr_file), 
+#                     is_merged_file = FALSE) %>% 
+#   rename(taxid = taxid,
+#          dna_hash = DNA_HASH)
+# 
+# merged_data2 <- merged_data2_backup <- 
+#   parse_refdb_fasta(file.path("database", db_name, merged_file), 
+#                     is_merged_file = TRUE) %>% 
+#   rename(merged_count = merged_count, 
+#          dna_hash = DNA_HASH,
+#          merged_taxid = merged_taxid,
+#          taxid = taxid)
+# merged_data2 <- merged_data2 %>% 
+#   mutate(merged_taxid = str_replace(merged_taxid, "\\{", "{'"),
+#          merged_taxid = str_replace_all(merged_taxid, ":", "':"),
+#          merged_taxid = str_replace_all(merged_taxid, ", ", ", '"))
+# 
+# ecopcr_combined2 <- combine_ecpocr_with_merged(ecopcr_data2, merged_data2) 
+# 
+# table(ecopcr_combined2$is_merged)
+# table(ecopcr_combined2$obi_rank)
+# table(ecopcr_combined2$obi_rank, ecopcr_combined2$is_merged)
+# 
+# 
+# df_conflicts2 <- genereer_conflicten(ecopcr_combined2, df_soortenlijst, df_ok_merges)
+# write_excel_csv2(df_conflicts2, file = paste0(output_path,"/", "niet_op_soort_gebracht_obi2.csv"))
+# 
+# df_soortenevaluatie2 <- genereer_soortenevaluatie(ecopcr_combined2, 
+#                                                   merged_data2,
+#                                                   input_data_before_multihit,
+#                                                   df_soortenlijst, 
+#                                                   df_multihits, 
+#                                                   df_ok_merges, 
+#                                                   df_conflicts2)
+# write_excel_csv2(df_soortenevaluatie2, file = paste0(output_path,"/", "soortenevaluatie_riaz_obi2.csv"))
+# 
 
