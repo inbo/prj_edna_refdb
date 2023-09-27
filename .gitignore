@@ -54,4 +54,5 @@ output/*.*
 *.tar
 *.prt
 *.Rdata
+*.RDS
 

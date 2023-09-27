@@ -26,7 +26,18 @@ sha1hash <- function(x) {
 #' @export
 #'
 #' @examples
-parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
+#' fr <- NULL
+#' fr[1] <- ">AF038468.1 count=6; merged_taxid={58317: 6}; species_name=Blicca bjoerkna; family=2743726; family_name=Leuciscidae; scientific_name=Blicca bjoerkna; reverse_match=CTTCCGGTACACTTACCATG; forward_error=0; rank=species; taxid=58317; forward_tm=60.26; genus_name=Blicca; forward_match=ACACCGCCCGTCACTCT; reverse_tm=nan; genus=58316; reverse_error=0; species=58317; strand=D;"
+#' fr[2] <- "cccctgtcaaaatgcaataaagttacttaacaccaaagcgctgacaaggggaggcaagtc" 
+#' fr[3] <- "gtaa"
+#' testrecord <- parse_fasta_record(fr, is_merged = TRUE, dna_type = "uppercase")
+#' 
+#' rec2 <- NULL
+#' rec2[1] <- ">MF326939 taxid=214916;"
+#' rec2[2] <- "CAAAGGCTTGGTCCTGACTTTATTATCAACTTTAGCCAAACTT"
+#' testrecord2 <- parse_fasta_record(rec2, is_merged = FALSE)
+
+parse_fasta_record_old <- function(record, is_merged, dna_type = "uppercase") {
   out <- NULL
   
   #>>> verkrijg de sequentie
@@ -44,15 +55,15 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
   spatie <- regexpr("\\s", metarow) #vind de eerste spatie
   merged_count <- -1
   recordname <- substring(metarow, 2, spatie - 1) 
-  tmpmeta <-  substring(metarow, spatie+1) #data met recordnaam eruit gestript
+  tmpmeta <-  substring(metarow, spatie) #data met recordnaam eruit gestript, spatie moet behouden blijven
   
   #>>> Vind Taxid
-  taxidpos <- regexpr("taxid=", tmpmeta)
+  taxidpos <- regexpr(" taxid=", tmpmeta)
   seppos_mult <- gregexpr(";", tmpmeta)[[1]]
-  seppos <- min(seppos_mult[seppos_mult > taxidpos+6]) #eerstvolgend na taxid
+  seppos <- min(seppos_mult[seppos_mult > taxidpos+7]) #eerstvolgend na taxid
   taxid <- NULL #initial value
   if (taxidpos > 0) {
-    taxid <- substring(tmpmeta, taxidpos+6, seppos-1)
+    taxid <- substring(tmpmeta, taxidpos+7, seppos-1)
   }
   
   #>>> Nieuws: vind count
@@ -61,6 +72,7 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
   if (is_merged) {
     #indien gemerged staat count= bij de recordnaam, dus hier ophalen
     cntpos <- regexpr("count=", tmpmeta)
+    if (cntpos == -1) cntpos <- regexpr("COUNT=", tmpmeta)
     seppos_mult <- gregexpr(";", tmpmeta)[[1]]
     seppos <- min(seppos_mult[seppos_mult > cntpos+6])  
     merged_count <- substring(tmpmeta, cntpos+6, seppos-1)
@@ -68,7 +80,7 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
       out <- c(out,  'merged_count' = merged_count)     
     }
   }
-  out <- c(out,  'genlab_id' = recordname)
+  out <- c(out,  'genbank_id' = recordname)
   out <- c(out, "taxid" = taxid)
   out <- c(out, 'dna_sequence' = sequentie)
 
@@ -91,7 +103,56 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
 }
 
 ###########################################
+## Experimentele snellere functies
 
+parse_fasta_record <- function(metadata, sequence) {
+  sequence <- toupper(sequence)
+  metadata <- unlist(str_split(metadata, pattern = "; "))
+  metadata[length(metadata)] <- str_replace(metadata[length(metadata)], ";", "")
+  firstpart <- unlist(str_split(metadata[1], " "))
+  metadata[1] <- paste0("genbank_id=",substring(firstpart[1], 2))
+  metadata <- c(metadata, firstpart[2])
+  metadata <- t(str_split(metadata, "=", simplify = TRUE))
+  rvdata <- metadata[2, , drop=FALSE]
+  colnames(rvdata) <- tolower(metadata[1,])
+  rvdata <- cbind(rvdata, dna_sequence = sequence)
+  as.data.frame(rvdata)
+}
+#parse_fasta_record_temp(f1$metadata, f1$sequence)
+
+
+parse_refdb_fasta <- function(file) {
+  #keep sourcefile information
+  lastslash <- max(gregexpr("/", file)[[1]])
+  filestem <- substring(file, lastslash+1)
+  inputfilestem <- gsub(".fasta", "", filestem)
+  content <- readLines(file)
+  newrecords <- which(startsWith(content, ">"))
+  endrecords <- c(newrecords[-1]-1, length(content))
+  record <- data.frame(metadata = content[newrecords], sequence = NA)
+  parsed <- NULL
+  nrw <- nrow(record)
+  modulo <- ceiling(nrw/100)
+  cat("inlezen van ", nrw, " records\n")
+  for (i in 1:nrw) {
+    if (i %% modulo == 0) cat ("#")
+    if (i == nrw) cat("\n")
+    metadata <- content[newrecords[i]]
+    sequence <- paste(content[(newrecords[i]+1):endrecords[i]], collapse = "")
+    #parsed <- bind_rows(parsed, parse_fasta_record_temp(metadata, sequence))
+    parsed[[i]]  <- parse_fasta_record(metadata, sequence)
+  }
+  #parserecord <<- parsed
+  rv <- bind_rows(parsed)
+  rv$source <- inputfilestem
+  rv$dna_hash <- sha1hash(rv$dna_sequence)
+  #parsed
+  rv
+}
+#system.time(test <- parse_refdb_fasta_temp("amplified_clean_uniq_test.fasta"))
+#system.time(test2 <- parse_refdb_fasta("amplified_clean_uniq_test.fasta"))
+
+###########################################
 
 #' Title
 #'
@@ -102,7 +163,7 @@ parse_fasta_record <- function(record, is_merged, dna_type = "uppercase") {
 #' @export
 #'
 #' @examples
-parse_refdb_fasta <- 
+parse_refdb_fasta_old <- 
   function(file, is_merged_file = FALSE, dna_type = "uppercase") {
   ### >>>lees de file lijn per lijn in
   content <- readLines(file)
@@ -135,7 +196,7 @@ parse_refdb_fasta <-
     if (i == 1) { 
       test <<- parsed_record
       cat("\n\nfirst record parsed:\n-------------------------\n")
-      cat("GENLAB_ID:", parsed_record$genlab_id, "\n")
+      cat("GENBANK_ID:", parsed_record$genbank_id, "\n")
       cat("TAXID:    ", parsed_record$taxid, "\n")
       cat("LEN:      ", nchar(parsed_record$dna_sequence), "\n")
       cat("SEQ:      ", substring(parsed_record$dna_sequence, 1, 30), "...\n")
@@ -146,7 +207,7 @@ parse_refdb_fasta <-
   
   ### >>> VOEG DE FILES SAMEN
   for ( i in 1:nrow(refdb)) {
-    refdb$AMPLICON_HASH[i] <- sha1hash(refdb$dna_sequence[i])
+    refdb$DNA_HASH[i] <- sha1hash(refdb$dna_sequence[i])
   }
   cat("\nDONE READING", nrow(refdb), "OF", nrow(recordlist),  "RECORDS\n\n")
   refdb
@@ -166,7 +227,7 @@ parse_refdb_fasta <-
 create_input_fasta <- function(file, data, lowercase = FALSE, 
                                seq = "dna_sequence",
                                taxid = "taxid",
-                               entry_id = "genlab_id") {
+                               entry_id = "genbank_id") {
   if(lowercase) {
     data$SEQ_12S <-  tolower(data[[seq]])
   } else {
@@ -198,6 +259,11 @@ select_primer_tags <- function(which = "RIAZ") {
     p2 <- "TAGAACAGGCTCCTCTAG"
     p2rc <- reverse_complement(p2)
     p1rc <- reverse_complement(p1)   
+  } else if (which == "TELEO") {
+    p1 <- "ACACCGCCCGTCACTCT"
+    p2 <- "CTTCCGGTACACTTACCRTG"
+    p2rc <- reverse_complement(p2)
+    p1rc <- reverse_complement(p1)     
   } else {
     stop("not implemented")
   }
@@ -225,3 +291,81 @@ reverse_complement <- function(x) {
 }
 
 #############################################################################
+
+
+#' Title
+#'
+#' @param size 
+#' @param prob 
+#' @param preamble 
+#' @param postamble 
+#' @param h1 
+#' @param h2 
+#' @param p1 
+#' @param p2 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_random_seq <- function(size = 100, prob = c(A=0.25, C=0.25, G=0.25, T=0.25),
+                              preamble = 10,  postamble = 10, 
+                              h1 = NULL, h2 = NULL,
+                              p1 = select_primer_tags("TELEO")[1],
+                              p2 = select_primer_tags("TELEO")[2]) {
+  #R = GA
+  #Y = TC
+  #N = GATC
+  pre = paste(sample(c("A", "C", "G", "T"), size = preamble, replace = TRUE, prob = prob), collapse = "")
+  post = paste(sample(c("A", "C", "G", "T"), size = postamble, replace = TRUE, prob = prob), collapse = "")
+  dna =  paste(sample(c("A", "C", "G", "T"), size = size, replace = TRUE, prob = prob), collapse = "")
+  seq <- paste0(pre, h1, p1, dna, p2, h2, post)
+  len <- nchar(seq)
+  seq <- str_split_1(seq, "")
+  R <- sample(c("G", "A"), size = len, replace = TRUE)
+  Y <- sample(c("T", "C"), size = len, replace = TRUE)
+  N <- sample(c("A", "C", "G", "T"), size = size, replace = TRUE)
+  seq_fin <- character(len)
+  seq_fin[seq == "A"] <- "A"
+  seq_fin[seq == "C"] <- "C"
+  seq_fin[seq == "G"] <- "G"
+  seq_fin[seq == "T"] <- "T"
+  seq_fin[seq == "R"] <- R[seq == "R"]
+  seq_fin[seq == "Y"] <- R[seq == "Y"]
+  seq_fin[seq == "N"] <- R[seq == "N"]
+  seq_fin <- paste(seq_fin, collapse = "")
+  seq_fin
+}
+
+############################################################################
+
+#' Title
+#'
+#' @param dna 
+#' @param which 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' seq <- "ACTGGGATTAGATACCCCATCGATCGATCGATCGATCGATCGATCGATCGCTAGAGGAGCCTGTTCTAAATTCCGGAATTCCGGACACCGCCCGTCACTCTAAATTTCCCGGGAAATTTCCCGGGCATGGTAAGTGTACCGGAAG"
+#' find_matching_seq(seq)
+find_matching_seq <- function(dna) {
+  dna <- toupper(dna)
+  R1_match <- regexpr(pattern = "ACTGGGATTAGATACCCC", text = dna)
+  R2_match <- regexpr(pattern = "CTAGAGGAGCCTGTTCTA", text = dna)
+  T1_match <- regexpr(pattern = "ACACCGCCCGTCACTCT",  text = dna)
+  T2a_match <- regexpr(pattern = "CATGGTAAGTGTACCGGAAG", text = dna)
+  T2b_match <- regexpr(pattern = "CACGGTAAGTGTACCGGAAG", text = dna)
+  T2_match = max(-1, T2a_match, T2b_match)
+  len_riaz <-  ifelse(R1_match > 0 & R2_match > 0, R2_match + 18 - R1_match, -1)
+  len_teleo <- ifelse(T1_match > 0 & T2_match > 0, T2_match + 20 - T1_match, -1)
+  c(R1 = R1_match, R2 = R2_match, R_len = len_riaz,  
+    R_eval = as.numeric(paste0(as.numeric(R1_match>0), as.numeric(R2_match>0))),
+    T1 = T1_match, T2 = T2_match, T_len = len_teleo, 
+    T_eval = as.numeric(paste0(as.numeric(T1_match>0), as.numeric(T2_match>0)))
+    )
+}
+
+
+

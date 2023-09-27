@@ -38,8 +38,20 @@ RUN . obi3-env/bin/activate && \
     python3 setup.py install && \
     cd .. \
     mkdir refdb
-    
-    
+
+# Install Cutadapt
+RUN obi3-env/bin/pip install cutadapt
+
+#Install Flash
+RUN wget https://downloads.sourceforge.net/project/flashpage/FLASH-1.2.11.tar.gz && \
+    tar -xzf FLASH-1.2.11.tar.gz && \
+    cd FLASH-1.2.11 && \
+    make && \
+    cp flash /usr/local/bin/ && \
+    cd .. && \
+    rm -rf FLASH-1.2.11 && \
+    rm FLASH-1.2.11.tar.gz
+
 # Update PATH variable
 ENV PATH="/app/obitools3/bin:${PATH}"
 
@@ -60,7 +72,7 @@ COPY welcome.sh /app/welcome.sh
 # Set the command to run your Bash script
 #CMD ["bash", "/app/welcome.sh"] #docker sluit na afronden script
 #CMD ["/bin/bash", "-c", "/app/welcome.sh && exec /bin/bash"] #docker image blijft open
-CMD ["/bin/bash", "-c", "source /app/obi3-env/bin/activate && obi test && /app/welcome.sh && exec /bin/bash"]
+CMD ["/bin/bash", "-c", "source /app/obi3-env/bin/activate && /app/welcome.sh && exec /bin/bash"]
 
 # Set the command to keep the container running indefinitely
 CMD ["tail", "-f", "/dev/null"]

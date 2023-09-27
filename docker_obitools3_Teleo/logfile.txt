@@ -1,0 +1,8 @@
+aantal inputs: 
+0
+aantal behouden inputs: 
+0
+aantal geamplificeerde inputs: 
+0
+aantal unieke inputs na merging: 
+0
