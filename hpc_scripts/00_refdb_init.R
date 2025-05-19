@@ -1,6 +1,19 @@
+###################
+### REF DB INIT ###
+###################
+
 # Adapted From: https://github.com/inbo/prj_edna_refdb
 
-# library(RSQLite)
+## INPUT:
+# - user_name
+# - output_folder
+# - taxdump_name
+# - db_name_teleo
+# - db_name_riaz
+# - root_gdrive
+
+##################
+
 library(tidyverse)
 library(googlesheets4)
 
@@ -18,7 +31,6 @@ googlesheets4::gs4_auth(user_name) #googlesheets4::gs4_deauth()
 # INPUT on HPC
 ## Could be made into cmd arguments
 output_folder = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025_TEST"
-taxdump_name <- file.path(output_folder, "taxonomy/2025-05-16-taxdump.tar.gz")
 
 # INPUT on GDRIVE
 #zelf te kiezen namen en locaties
@@ -57,8 +69,6 @@ my_TS = format(Sys.time(), "%Y%m%d")
 cleaned_input_fasta <- file.path("database", "input", paste0(my_TS,"_input_seqs_cleaned.fasta"))
 all_input_fasta <- file.path("database", "input", paste0(my_TS,"_input_seqs.fasta"))
 
-fasta_name <- paste0(my_TS,'_input.fasta')
-
 refdb_location_riaz  <- file.path("database", db_name_riaz)
 refdb_location_teleo <- file.path("database", db_name_teleo)
 
@@ -79,32 +89,3 @@ if (!dir.exists("database")) dir.create("database")
 if (!dir.exists("database/input")) dir.create("database/input")
 if (!dir.exists(refdb_location_riaz)) dir.create(file.path("database", db_name_riaz))
 if (!dir.exists(refdb_location_teleo)) dir.create(file.path("database", db_name_teleo))
-
-
-### Docker variabelen
-###---------------------
-
-# docker_image_name <- "obitools3pv"
-obi_script_riaz  <- "refdb_riaz.sh"
-obi_script_teleo <- "refdb_teleo.sh"
-
-# docker_win_riaz  <- "docker_obitools3_riaz"
-# docker_win_teleo <- "docker_obitools3_teleo"
-
-# docker_container_name <- "obitools3container" 
-# docker_path           <- paste0(docker_container_name, ":/app/")
-# docker_taxonomy       <- paste0(docker_path, "taxdump.tar.gz")
-# docker_input_fasta    <- paste0(docker_path, "input.fasta")
-
-# docker_script_riaz  <- paste0('/app/', obi_script_riaz)
-# docker_script_teleo <- paste0('/app/', obi_script_teleo)
-
-# pscommand_build_riaz  <- paste("docker", "build", "-t", 
-#                                docker_image_name, paste0("./", docker_win_riaz, "/"))
-# pscommand_build_teleo <- paste("docker", "build", "-t", 
-#                                docker_image_name, paste0("./", docker_win_teleo, "/"))
-# 
-# pscommand_delete <- paste("docker", "rm", docker_container_name)
-# pscommand_run <- paste("docker run --rm -i -d --name", 
-#                        docker_container_name, docker_image_name) 
-# # -i for interactive mode, -d for detached mode (run in background) 
