@@ -11,18 +11,21 @@
 
 #### INPUT:
 # LAUNCH DIR: database/
-# IN_FASTA: sequences to be taxonomically assigned, zotus/ASV.fasta (FASTA)
-# DB: REF_DB (OBITools3 DMS)
+# IN_FASTA: input sequences cleaned with Rscripts prj_eDNA_REFDB (FASTA)
+# TAX_DUMP_GZ: zipped ncbi taxdump
 #### EXAMPLE job submission:
-# qsub .../04_obitools3_ecotag.pbs -v IN_FASTA=otus.fasta,DB=.../metadata/REF_DB
+# sbatch .../refdb_riaz.slurm -i input.fasta -t taxdump.tar.gz
 
+################################
+# Commandline Argument Parsing #
+################################
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     -i|--input)
       IN_FASTA=$2
       shift 2;;
-    -R|--refdb)
+    -t|--taxdmp)
       TAX_DUMP_GZ=$2
       shift 2;;
     -*|--*)
@@ -31,7 +34,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Prep env
+###############
+# PREPARATION #
+###############
+
 module purge
 module load Python/3.9.5-GCCcore-10.3.0
 source obitools3-venv
