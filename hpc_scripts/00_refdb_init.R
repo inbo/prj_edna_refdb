@@ -17,7 +17,7 @@ googlesheets4::gs4_auth(user_name) #googlesheets4::gs4_deauth()
 ###-------------------------
 # INPUT on HPC
 ## Could be made into cmd arguments
-output_folder = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025"
+output_folder = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025_TEST"
 taxdump_name <- file.path(output_folder, "taxonomy/2025-05-16-taxdump.tar.gz")
 
 # INPUT on GDRIVE
@@ -35,21 +35,29 @@ db_name_riaz  <- "refdb_riaz_XXX"
 
 system("rclone version") # make sure rclone module is loaded in the pre-run scriplet! (module load rclone)
 system("rclone mount gdrive: ~/G_MOUNT -vv --daemon")
+system("ls ~/G_MOUNT") # should list your gdrive: content
 
+# construct path to desired folder, USER SPECIFIC HARDCODE!
 root_gdrive <- file.path("~/G_MOUNT", 
                          "GDRIVE_shortcuts",
                          "PRJ_eDNA_Refdb_2023" )
 
+# folder structure ~ DMP
 fasta_inputs_location <- file.path(root_gdrive, 'input_seqs', 'import')
 
-fasta_inputs_location_id = "1Q0OgyA_WSHGWdZjy3LvjAzP9MGiqBmCr"
+# Not used?
+# fasta_inputs_location_id = "1Q0OgyA_WSHGWdZjy3LvjAzP9MGiqBmCr"
 
 #google key van de sheet waar de soortenlijst, multihit, ... bewaard wordt
 metadata_gdrive_key <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
 
-cleaned_input_fasta <- file.path("database", "input", "cleaned_inputs.fasta") 
-all_input_fasta <- file.path("database", "input", "all_inputs.fasta") 
-fasta_name <- 'input.fasta'
+## HARDOCED OUTPUT NAMES
+my_TS = format(Sys.time(), "%Y%m%d")
+
+cleaned_input_fasta <- file.path("database", "input", paste0(my_TS,"_input_seqs_cleaned.fasta"))
+all_input_fasta <- file.path("database", "input", paste0(my_TS,"_input_seqs.fasta"))
+
+fasta_name <- paste0(my_TS,'_input.fasta')
 
 refdb_location_riaz  <- file.path("database", db_name_riaz)
 refdb_location_teleo <- file.path("database", db_name_teleo)
@@ -65,9 +73,13 @@ source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_postprocessi
 
 # Create output directories in target folder
 setwd(output_folder)
+
+# DATABASE output
 if (!dir.exists("database")) dir.create("database")
+if (!dir.exists("database/input")) dir.create("database/input")
 if (!dir.exists(refdb_location_riaz)) dir.create(file.path("database", db_name_riaz))
 if (!dir.exists(refdb_location_teleo)) dir.create(file.path("database", db_name_teleo))
+
 
 ### Docker variabelen
 ###---------------------
