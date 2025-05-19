@@ -20,6 +20,9 @@
 # Commandline Argument Parsing #
 ################################
 
+# default
+PRIMER_NAME="riaz"
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     -i|--input)
@@ -28,11 +31,34 @@ while [[ $# -gt 0 ]]; do
     -t|--taxdmp)
       TAX_DUMP_GZ=$2
       shift 2;;
+    -p|--primer)
+      PRIMER_NAME=$2
+      shift 2;;
     -*|--*)
       echo unknown argument $1
       exit 1;;
   esac
 done
+
+# Set primer specific parameters
+#Riaz or Teleo analysis?
+if [ $PRIMER_NAME == "riaz" ]; then
+  PRIMER_MINL=50
+  PRIMER_MAXL=160
+  PRIMER_E=4
+  PRIMER_FWD=ACTGGGATTAGATACCCC
+  PRIMER_REV=TAGAACAGGCTCCTCTAG
+
+elif [ $PRIMER_NAME == "teleo" ]; then
+  PRIMER_MINL=20
+  PRIMER_MAXL=100
+  PRIMER_E=5
+  PRIMER_FWD=ACACCGCCCGTCACTCT
+  PRIMER_REV=CTTCCGGTACACTTACCRTG
+
+else
+	exit 1
+fi
 
 ###############
 # PREPARATION #
@@ -51,7 +77,7 @@ grep -c "^>" $IN_FASTA >> $MY_LOG
 ### OBITOOLS REFDB ###
 ######################
 
-OBI_REF_DB=$(date -I)-obitools3-refdb
+OBI_REF_DB=$(date -I)-obitools3-refdb-"$PRIMER_NAME"
 
 obi import $IN_FASTA $OBI_REF_DB/input
 
@@ -62,7 +88,8 @@ grep -c "^>"  "$OBI_REF_DB"-input.fasta >> $MY_LOG
 
 obi import --taxdump $TAX_DUMP_GZ $OBI_REF_DB/taxonomy/dump
 
-obi ecopcr -e 4 -l 50 -L 160 -F ACTGGGATTAGATACCCC -R TAGAACAGGCTCCTCTAG \
+obi ecopcr -e $PRIMER_E -l $PRIMER_MINL -L $PRIMER_MAXL \
+  -F $PRIMER_FWD -R $PRIMER_REV \
   --taxonomy $OBI_REF_DB/taxonomy/dump $OBI_REF_DB/input $OBI_REF_DB/ecopcr
 
 obi export $OBI_REF_DB/ecopcr -o "$OBI_REF_DB"-ecopcr.fasta
