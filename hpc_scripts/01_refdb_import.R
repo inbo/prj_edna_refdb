@@ -1,15 +1,3 @@
-# ---------------------------
-### HARDCODED OUTPUT NAMES ###
-
-# For processing of INPUT from GDrive
-import_dir_name = file.path("database", "input_reference_sequences")
-
-my_TS = format(Sys.time(), "%Y%m%d")
-all_input_fasta <- file.path(
-  import_dir_name, paste0(my_TS, "_", basename(root_gdrive),"_reference_sequences.fasta"))
-cleaned_input_fasta <- file.path(
-  import_dir_name, paste0(my_TS,"_", basename(root_gdrive),"_reference_sequences_cleaned.fasta"))
-
 ###############
 #### INPUT ####
 ###############

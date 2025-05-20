@@ -1,29 +1,57 @@
-#################################
-### POSTPROCESSING
-#################################
+### ------------------------- ###
+### ----- INPUT by USER ----- ###
+### ------------------------- ###
 
-obitools_input_data <- parse_refdb_fasta(file.path("database", db_name_riaz, "kept_input.fasta"))
-input_data_before_multihit <- read_rds(str_replace(cleaned_input_fasta, '.fasta', '.RDS'))
+PRIMER_NAME="teleo"
+DB_NAME = "20250520_refdb_teleo"
 
-ecopcr_data <- 
-  parse_refdb_fasta(file.path("database", db_name_riaz, "amplified.fasta"))
+# ---------------------------
+### HARDOCED OUTPUT NAMES ###
 
-merged_data <- 
-  parse_refdb_fasta(file.path("database", db_name_riaz, "final_db_0.99.fasta"))  %>% 
-  mutate(obi_taxid = str_replace(substring(lca_taxid, 2), "]", ""),
-         taxid = str_replace(taxid, ";", ""))
+refdb_location  <- file.path("database", DB_NAME)
 
-ecopcr_combined <- combine_ecpocr_with_merged(ecopcr_data, merged_data) 
+obi_input_fasta_path = list.files(refdb_location, pattern = "-input.fasta", full.names = T)
+obi_ecopcr_fasta_path = list.files(refdb_location, pattern = "-ecopcr.fasta", full.names = T)
+obi_refdb_fasta_path = list.files(refdb_location, pattern = "-ecopcr_final_0.995.fasta", full.names = T)
+
+##################
+### READ INPUT ###
+##################
+
+# INPUT from GSHEET
+#! allowed merges per primer
+if (PRIMER_NAME == "riaz"){
+  df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Riaz")
+} else if (PRIMER_NAME == "teleo"){
+  df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
+}
+df_allowed_merges = df_allowed_merges %>% rename_all(., .funs = tolower)
 
 df_soortenlijst <-  read_sheet(metadata_gdrive_key, "Soortenlijst") %>% 
   mutate(taxid = Taxid, priority = Priority, rank = Rank) %>% 
   filter(priority != 9)
 
-###
+# INPUT form OBITools3 DMS
+obitools_input_data <- parse_refdb_fasta(obi_input_fasta_path)
 
-df_conflicts <- genereer_conflicten(ecopcr_combined, df_soortenlijst, df_allowed_merges)
-write_excel_csv2(df_conflicts, 
-                 file = file.path('database', db_name_riaz,"niet_op_soort_gebracht.csv"))
+ecopcr_data <- parse_refdb_fasta(obi_ecopcr_fasta_path)
+
+merged_data <- parse_refdb_fasta(obi_refdb_fasta_path)  %>% 
+  mutate(obi_taxid = str_replace(substring(lca_taxid, 2), "]", ""),
+         taxid = str_replace(taxid, ";", ""))
+
+# INPUT from pre-processed reference sequences GDrive
+input_data_before_multihit <- read_rds(str_replace(cleaned_input_fasta, '.fasta', '.RDS'))
+
+######################
+### POSTPROCESSING ###
+######################
+
+ecopcr_combined <- combine_ecpocr_with_merged(ecopcr_data, merged_data) 
+
+
+df_conflicts <- genereer_conflicten(ecopcr_combined, df_soortenlijst,
+                                    df_allowed_merges)
 
 df_soortenevaluatie <- genereer_soortenevaluatie(ecopcr_combined, 
                                                  merged_data,
@@ -32,5 +60,10 @@ df_soortenevaluatie <- genereer_soortenevaluatie(ecopcr_combined,
                                                  df_multihit, 
                                                  df_allowed_merges, 
                                                  df_conflicts)
+### ---------------
+### write output ###
+write_excel_csv2(df_conflicts, 
+                 file = file.path(refdb_location,"niet_op_soort_gebracht.csv"))
+
 write_excel_csv2(df_soortenevaluatie, 
-                 file = file.path('database', db_name_riaz, "soortenevaluatie_riaz.csv"))
+                 file = file.path(refdb_location, paste0("soortenevaluatie_", PRIMER_NAME,".csv")))

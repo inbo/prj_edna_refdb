@@ -98,7 +98,7 @@ obi ecopcr -e $PRIMER_E -l $PRIMER_MINL -L $PRIMER_MAXL \
 obi export $OBI_REF_DB/ecopcr -o "$OBI_REF_DB"-ecopcr.fasta
 
 echo 'aantal geamplificeerde inputs: ' >> $MY_LOG
-grep -c "^>"  "$OBI_REF_DB"-ecopcr.fasta | >> $MY_LOG
+grep -c "^>"  "$OBI_REF_DB"-ecopcr.fasta >> $MY_LOG
 
 #cleaning:
 #obi grep --require-rank=species --require-rank=genus --require-rank=family --taxonomy refdb/taxonomy/dump refdb/ecopcr refdb/ecopcr_clean

@@ -46,9 +46,6 @@ nrow(df_passlist)
 #! multihitsoorten
 df_multihit = df_multihit %>% rename_all(., .funs = tolower)
 
-#!toegelaten merges op hoger niveau
-df_allowed_merges = df_allowed_merges %>% rename_all(., .funs = tolower)
-
 #! Pas de multihitlijst toe
 #-----------------------------
 df_inputs <- df_inputs_cleaned %>% 
@@ -79,4 +76,9 @@ create_input_fasta(file = fasta_name,
 ### GENEREREN DB
 #################################
 
-# Launch job script 03_refdb_ecopcr_riaz.slurm with -i IN_FASTA and -t taxdump.gz
+# Launch job script
+# Example for riaz:
+# sbatch $VSC_DATA/prj_edna_refdb/hpc_scripts/03_refdb_ecopcr.slurm \
+#   -i 20250520_PRJ_eDNA_Refdb_2023_riaz_input.fasta \
+#   -t ../../taxonomy/2025-05-16-taxdump.tar.gz \
+#   -p riaz
