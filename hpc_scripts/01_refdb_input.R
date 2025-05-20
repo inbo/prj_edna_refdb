@@ -31,22 +31,22 @@ for (f in input_fasta_files) {
 #! sequentiefouten
 df_seq_errors <- read_sheet(metadata_gdrive_key, "Sequentiefouten")
 
-
 #! nakijken of er duplicaten zijn
 #----------------------------------
 # Clean whitespace (why 2 =/= functions?)
-df_inputs_all <- df_inputs_orig %>% 
+df_inputs_orig <- df_inputs_orig %>% 
   mutate(genbank_id = stringr::str_trim(genbank_id),
          taxid = trimws(df_inputs_orig$taxid))
 
 # Select duplicated records
-whidup <- which(duplicated(df_inputs_all %>%  select(genbank_id)))
-dupids <- df_inputs_all %>% slice(whidup) %>% pull(genbank_id)
+whidup <- which(duplicated(df_inputs_orig %>%  select(genbank_id)))
+dupids <- df_inputs_orig %>% slice(whidup) %>% pull(genbank_id)
 #df_inputs_all %>% filter(genbank_id %in% dupids) %>% arrange(genbank_id) %>% view()
 
-# remove (dangerous in interactive, run exactly ONCE!)
-if (length(whidup)) df_inputs_all <- df_inputs_all[-whidup, ]
+# remove
+if (length(whidup)) df_inputs_all <- df_inputs_orig[-whidup, ]
 
+# Write data to the OUTPUT dir
 saveRDS(df_inputs_all, file.path(str_replace(all_input_fasta, ".fasta", '.RDS' )))
 create_input_fasta(file = all_input_fasta, 
                    lowercase = TRUE, 
