@@ -1,3 +1,15 @@
+# ---------------------------
+### HARDCODED OUTPUT NAMES ###
+
+# For processing of INPUT from GDrive
+import_dir_name = file.path("database", "input_reference_sequences")
+
+my_TS = format(Sys.time(), "%Y%m%d")
+all_input_fasta <- file.path(
+  import_dir_name, paste0(my_TS, "_", basename(root_gdrive),"_reference_sequences.fasta"))
+cleaned_input_fasta <- file.path(
+  import_dir_name, paste0(my_TS,"_", basename(root_gdrive),"_reference_sequences_cleaned.fasta"))
+
 ###############
 #### INPUT ####
 ###############
@@ -46,12 +58,6 @@ dupids <- df_inputs_orig %>% slice(whidup) %>% pull(genbank_id)
 # remove
 if (length(whidup)) df_inputs_all <- df_inputs_orig[-whidup, ]
 
-# Write data to the OUTPUT dir
-saveRDS(df_inputs_all, file.path(str_replace(all_input_fasta, ".fasta", '.RDS' )))
-create_input_fasta(file = all_input_fasta, 
-                   lowercase = TRUE, 
-                   data = df_inputs_all)
-
 
 #Kijk of er nog prioriteit-9 (soorten die niet weerhouden worden wegens bvb hybriden) aan seq_errors moet toegevoegd worden
 
@@ -75,11 +81,22 @@ dup_ids <- df_inputs %>% group_by(genbank_id) %>%
             taxa = paste(unique(taxid), collapse = ",")) %>% 
   filter(aantal_seqs > 1 & aantal_taxa > 1)
 
-#! Bewaar de gecleande data
-#-------------------------------
-saveRDS(df_inputs,
-        file.path(str_replace(cleaned_input_fasta, ".fasta", '.RDS' )))
 
+
+#! Bewaar de (gecleande) data
+#-------------------------------
+
+# Create OUTPUT dir
+dir.create(import_dir_name, recursive = T)
+
+# Write "all" data to the OUTPUT dir
+saveRDS(df_inputs_all, file.path(str_replace(all_input_fasta, ".fasta", '.RDS' )))
+create_input_fasta(file = all_input_fasta, 
+                   lowercase = TRUE, 
+                   data = df_inputs_all)
+
+# Write "cleaned" data to the OUTPUT dir
+saveRDS(df_inputs, file.path(str_replace(cleaned_input_fasta, ".fasta", '.RDS' )))
 create_input_fasta(file = cleaned_input_fasta, 
                    lowercase = TRUE, 
                    data = df_inputs)
