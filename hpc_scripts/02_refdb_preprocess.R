@@ -82,3 +82,9 @@ create_input_fasta(file = fasta_name,
 #   -i 20250520_PRJ_eDNA_Refdb_2023_riaz_input.fasta \
 #   -t ../../taxonomy/2025-05-16-taxdump.tar.gz \
 #   -p riaz
+
+print(paste0("sbatch", 
+             " $VSC_DATA/prj_edna_refdb/hpc_scripts/03_refdb_ecopcr.slurm",
+             " -i ", basename(fasta_name),
+             " -t ", "../../taxonomy/taxdump.tar.gz",
+             " -p ", PRIMER_NAME))
