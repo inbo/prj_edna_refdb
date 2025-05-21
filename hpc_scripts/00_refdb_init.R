@@ -18,8 +18,8 @@
 # Working directory where the results will be stored/read
 USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025_TEST2"
 
-#google drive gebruikersnaam
-USER_NAME <- "nick.dillen@inbo.be"
+#google drive gebruikersnaam -> assume this is set up in git config, and is the same as work-email
+USER_NAME <- system("git config --global user.email", intern = T)
 
 ##################
 
