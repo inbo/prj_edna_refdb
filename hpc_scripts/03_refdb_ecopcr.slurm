@@ -82,6 +82,10 @@ grep -c "^>" $IN_FASTA >> $MY_LOG
 
 OBI_REF_DB=$(date -I)-obitools3-refdb-"$PRIMER_NAME"
 
+mkdir "$OBI_REF_DB"
+
+OBI_REF_DB="$OBI_REF_DB/$OBI_REF_DB"
+
 obi import $IN_FASTA $OBI_REF_DB/input
 
 obi export $OBI_REF_DB/input -o "$OBI_REF_DB"-input.fasta

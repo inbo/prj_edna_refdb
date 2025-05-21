@@ -2,7 +2,7 @@
 ### REF DB INIT ###
 ###################
 
-# RUN INTERACTIVELY #
+# !RUN INTERACTIVELY! #
 
 # Adapted From: https://github.com/inbo/prj_edna_refdb
 
@@ -15,8 +15,8 @@
 ### ----- INPUT by USER ----- ###
 ### ------------------------- ###
 
-#directory where the results will be stored
-USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025_TEST"
+# Working directory where the results will be stored/read
+USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025_TEST2"
 
 #google drive gebruikersnaam
 USER_NAME <- "nick.dillen@inbo.be"
@@ -64,15 +64,3 @@ source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_postprocessi
 
 # Create output directories in target folder
 setwd(USER_OUTPUT_DIR)
-
-# ---------------------------
-### HARDCODED OUTPUT NAMES ###
-
-# For processing of INPUT from GDrive
-import_dir_name = file.path("database", "input_reference_sequences")
-
-my_TS = format(Sys.time(), "%Y%m%d")
-all_input_fasta <- file.path(
-  import_dir_name, paste0(my_TS, "_", basename(root_gdrive),"_reference_sequences.fasta"))
-cleaned_input_fasta <- file.path(
-  import_dir_name, paste0(my_TS,"_", basename(root_gdrive),"_reference_sequences_cleaned.fasta"))

@@ -2,7 +2,12 @@
 ### ----- INPUT by USER ----- ###
 ### ------------------------- ###
 
-PRIMER_NAME="teleo"
+PRIMER_NAME="riaz"
+
+# Assert that inputs are still defined! These INPUT vars are assumed to exist
+stopifnot(file.exists(cleaned_input_fasta),
+          file.exists(all_input_fasta),
+          exists("metadata_gdrive_key"))
 
 # ---------------------------
 ### HARDOCED OUTPUT NAMES ###
@@ -21,10 +26,11 @@ fasta_name = file.path(refdb_location, paste0(refseq_ID, "_", PRIMER_NAME, "_inp
 ### INPUTS OP ORDE STELLEN ### 
 ##############################
 
-#!inputs inlezen (nadat de sequentiefouten eruit zijn)
+#!inputs inlezen uit vorige stap 01_refdb_import.R (nadat de sequentiefouten eruit zijn)
 df_inputs_cleaned <- read_rds(str_replace(cleaned_input_fasta, '.fasta', '.RDS'))
 df_inputs_raw <- read_rds(str_replace(all_input_fasta, '.fasta', '.RDS'))
 
+# Read input Google Sheet
 #! opnieuw toegestaan
 if (PRIMER_NAME == "riaz"){
   df_passlist <- read_sheet(metadata_gdrive_key, "Passlist_Riaz")
@@ -48,6 +54,7 @@ df_multihit = df_multihit %>% rename_all(., .funs = tolower)
 
 #! Pas de multihitlijst toe
 #-----------------------------
+
 df_inputs <- df_inputs_cleaned %>% 
   filter(!taxid %in% (df_multihit %>% 
                         filter(taxid != pref_taxid) %>% 
@@ -55,6 +62,7 @@ df_inputs <- df_inputs_cleaned %>%
 
 #!  Herintroduceer sequenties uit de passlist
 #---------------------------
+
 df_inputs <- df_inputs %>% bind_rows(df_passlist) 
 
 # remove full duplicates

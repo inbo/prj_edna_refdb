@@ -2,13 +2,17 @@
 ### ----- INPUT by USER ----- ###
 ### ------------------------- ###
 
-PRIMER_NAME="teleo"
-DB_NAME = "20250520_refdb_teleo"
+PRIMER_NAME="riaz"
+OBITOOLS_OUTPUT=file.path("20250521_refdb_riaz", "2025-05-21-obitools3-refdb-riaz")
+
+# Assert that inputs are still defined! These INPUT vars are assumed to exist
+stopifnot(file.exists(cleaned_input_fasta),
+          exists("metadata_gdrive_key"))
 
 # ---------------------------
 ### HARDOCED OUTPUT NAMES ###
 
-refdb_location  <- file.path("database", DB_NAME)
+refdb_location  <- file.path("database", OBITOOLS_OUTPUT)
 
 obi_input_fasta_path = list.files(refdb_location, pattern = "-input.fasta", full.names = T)
 obi_ecopcr_fasta_path = list.files(refdb_location, pattern = "-ecopcr.fasta", full.names = T)
