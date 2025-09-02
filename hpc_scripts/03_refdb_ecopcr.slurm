@@ -54,7 +54,7 @@ if [ $PRIMER_NAME == "riaz" ]; then
 elif [ $PRIMER_NAME == "teleo" ]; then
   echo "TELEO-ecopcr"
   PRIMER_MINL=20
-  PRIMER_MAXL=100
+  PRIMER_MAXL=200
   PRIMER_E=5
   PRIMER_FWD=ACACCGCCCGTCACTCT
   PRIMER_REV=CTTCCGGTACACTTACCRTG
@@ -93,11 +93,11 @@ obi export $OBI_REF_DB/input -o "$OBI_REF_DB"-input.fasta
 echo 'aantal behouden inputs: ' >> $MY_LOG
 grep -c "^>"  "$OBI_REF_DB"-input.fasta >> $MY_LOG
 
-obi import --taxdump $TAX_DUMP_GZ $OBI_REF_DB/taxonomy/dump
+obi import --taxdump $TAX_DUMP_GZ $OBI_REF_DB/taxonomy/taxdump
 
 obi ecopcr -e $PRIMER_E -l $PRIMER_MINL -L $PRIMER_MAXL \
   -F $PRIMER_FWD -R $PRIMER_REV \
-  --taxonomy $OBI_REF_DB/taxonomy/dump $OBI_REF_DB/input $OBI_REF_DB/ecopcr
+  --taxonomy $OBI_REF_DB/taxonomy/taxdump $OBI_REF_DB/input $OBI_REF_DB/ecopcr
 
 obi export $OBI_REF_DB/ecopcr -o "$OBI_REF_DB"-ecopcr.fasta
 
@@ -105,13 +105,13 @@ echo 'aantal geamplificeerde inputs: ' >> $MY_LOG
 grep -c "^>"  "$OBI_REF_DB"-ecopcr.fasta >> $MY_LOG
 
 #cleaning:
-#obi grep --require-rank=species --require-rank=genus --require-rank=family --taxonomy refdb/taxonomy/dump refdb/ecopcr refdb/ecopcr_clean
+#obi grep --require-rank=species --require-rank=genus --require-rank=family --taxonomy refdb/taxonomy/taxdump refdb/ecopcr refdb/ecopcr_clean
 #obi export refdb/ecopcr_clean -o amplified_clean.fasta
 #echo 'aantal gegrepte geamplificeerde inputs: ' >> logfile.txt
 #grep -E  -i '>'  amplified_clean.fasta | wc -l >> logfile.txt
 
-#obi uniq --taxonomy refdb/taxonomy/dump refdb/ecopcr_clean refdb/ecopcr_uniq #indien cleaning
-obi uniq --taxonomy $OBI_REF_DB/taxonomy/dump $OBI_REF_DB/ecopcr $OBI_REF_DB/ecopcr_uniq #geen cleaning
+#obi uniq --taxonomy refdb/taxonomy/taxdump refdb/ecopcr_clean refdb/ecopcr_uniq #indien cleaning
+obi uniq --taxonomy $OBI_REF_DB/taxonomy/taxdump $OBI_REF_DB/ecopcr $OBI_REF_DB/ecopcr_uniq #geen cleaning
 
 obi export $OBI_REF_DB/ecopcr_uniq -o $OBI_REF_DB-ecopcr_uniq.fasta
 
@@ -119,16 +119,16 @@ echo 'aantal uniek geamplificeerde inputs: ' >> $MY_LOG
 grep -c "^>" $OBI_REF_DB-ecopcr_uniq.fasta >> $MY_LOG
 
 #cleaning
-#obi grep --require-rank=family --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq  refdb/ecopcr_uniq_clean 
+#obi grep --require-rank=family --taxonomy refdb/taxonomy/taxdump refdb/ecopcr_uniq  refdb/ecopcr_uniq_clean 
 #obi export refdb/ecopcr_uniq_clean -o amplified_clean_uniq.fasta 
 #obi export refdb/ecopcr_uniq_clean -o amplified_uniq.fasta
 #echo 'aantal uniek met grep gecleande inputs: ' >> logfile.txt
 #grep -E  -i '>'  amplified_clean_uniq.fasta | wc -l >> logfile.txt
 
-#obi build_ref_db -t 0.97 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.97 #indien cleaning
-#obi build_ref_db -t 0.995 --taxonomy refdb/taxonomy/dump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.99 #indien cleaning
-obi build_ref_db -t 0.97 --taxonomy $OBI_REF_DB/taxonomy/dump $OBI_REF_DB/ecopcr_uniq $OBI_REF_DB/ecopcr_final_0.97 #geen cleaning
-obi build_ref_db -t 0.995 --taxonomy $OBI_REF_DB/taxonomy/dump $OBI_REF_DB/ecopcr_uniq $OBI_REF_DB/ecopcr_final_0.995 #geen cleaning
+#obi build_ref_db -t 0.97 --taxonomy refdb/taxonomy/taxdump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.97 #indien cleaning
+#obi build_ref_db -t 0.995 --taxonomy refdb/taxonomy/taxdump refdb/ecopcr_uniq_clean refdb/ecopcr_final_0.99 #indien cleaning
+obi build_ref_db -t 0.97 --taxonomy $OBI_REF_DB/taxonomy/taxdump $OBI_REF_DB/ecopcr_uniq $OBI_REF_DB/ecopcr_final_0.97 #geen cleaning
+obi build_ref_db -t 0.995 --taxonomy $OBI_REF_DB/taxonomy/taxdump $OBI_REF_DB/ecopcr_uniq $OBI_REF_DB/ecopcr_final_0.995 #geen cleaning
 
 obi export  --fasta-output $OBI_REF_DB/ecopcr_final_0.97 -o $OBI_REF_DB-ecopcr_final_0.97.fasta
 obi export  --fasta-output $OBI_REF_DB/ecopcr_final_0.995 -o $OBI_REF_DB-ecopcr_final_0.995.fasta
