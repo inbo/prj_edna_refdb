@@ -3,6 +3,7 @@
 ### ------------------------- ###
 
 PRIMER_NAME="riaz"
+# PRIMER_NAME="teleo"
 
 # Assert that inputs are still defined! These INPUT vars are assumed to exist
 stopifnot(file.exists(cleaned_input_fasta),
@@ -90,9 +91,10 @@ create_input_fasta(file = fasta_name,
 #   -i 20250520_PRJ_eDNA_Refdb_2023_riaz_input.fasta \
 #   -t ../../taxonomy/2025-05-16-taxdump.tar.gz \
 #   -p riaz
-
-print(paste0("sbatch", 
-             " $VSC_DATA/prj_edna_refdb/hpc_scripts/03_refdb_ecopcr.slurm",
+cat(paste0("In your HPC-terminal:\n\n#Go to the directory with input sequences\ncd ", USER_OUTPUT_DIR, "/",refdb_location,
+           "\n\n# Launch the OBITools3-ecopcr JOB to perform in-silico PCR and create a REFDB :\n",
+  "sbatch",
+  " $VSC_DATA/prj_edna_refdb/hpc_scripts/03_refdb_ecopcr.slurm",
              " -i ", basename(fasta_name),
              " -t ", "../../taxonomy/taxdump.tar.gz",
-             " -p ", PRIMER_NAME))
+             " -p ", PRIMER_NAME, "\n\nWait untill the job has completed before you continue!\nYou can track this with:\n\nsqueue -M all"))

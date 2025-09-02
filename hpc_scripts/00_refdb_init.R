@@ -16,7 +16,7 @@
 ### ------------------------- ###
 
 # Working directory where the results will be stored/read
-USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb_2025_TEST2"
+USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb/TELEO_max200"
 
 #google drive gebruikersnaam -> assume this is set up in git config, and is the same as work-email
 USER_NAME <- system("git config --global user.email", intern = T)
@@ -42,11 +42,11 @@ googlesheets4::gs4_auth(USER_NAME) #googlesheets4::gs4_deauth()
 
 #system("module load rclone") # Load Rclone module on HPC -THIS DOES NOT WORK. NEED TO ADD TO Rstudio server FORM
 system("rclone version") # make sure rclone module is loaded in the pre-run scriplet! (module load rclone)
-system("rclone mount gdrive: ~/G_MOUNT -vv --daemon") # loads some minutes
-system("ls ~/G_MOUNT") # should list your gdrive: content
+system("rclone mount gdrive: ~/rclone_mnt/MyDrive -vv --daemon") # loads some minutes
+system("ls ~/rclone_mnt/MyDrive") # should list your gdrive: content
 
 # construct path to desired folder, USER SPECIFIC HARDCODE!
-root_gdrive <- file.path("~/G_MOUNT", 
+root_gdrive <- file.path("~/rclone_mnt/MyDrive", 
                          "GDRIVE_shortcuts",
                          "PRJ_eDNA_Refdb_2023" )
 

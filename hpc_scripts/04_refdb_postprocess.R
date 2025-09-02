@@ -3,7 +3,14 @@
 ### ------------------------- ###
 
 PRIMER_NAME="riaz"
-OBITOOLS_OUTPUT=file.path("20250521_refdb_riaz", "2025-05-21-obitools3-refdb-riaz")
+# PRIMER_NAME="teleo"
+
+# output of the job script 03_refdb_ecopcr.slurm
+# Most likely its in this list:
+grep(".obidms$", x = list.dirs(".", full.names = T, recursive = T), value = T)
+
+OBITOOLS_OUTPUT=file.path("./database/20250902_refdb_riaz/2025-09-02-obitools3-refdb-riaz/")
+# OBITOOLS_OUTPUT=file.path("./database/20250902_refdb_teleo/2025-09-02-obitools3-refdb-teleo")
 
 # Assert that inputs are still defined! These INPUT vars are assumed to exist
 stopifnot(file.exists(cleaned_input_fasta),
@@ -12,7 +19,7 @@ stopifnot(file.exists(cleaned_input_fasta),
 # ---------------------------
 ### HARDOCED OUTPUT NAMES ###
 
-refdb_location  <- file.path("database", OBITOOLS_OUTPUT)
+refdb_location  <- file.path(OBITOOLS_OUTPUT)
 
 obi_input_fasta_path = list.files(refdb_location, pattern = "-input.fasta", full.names = T)
 obi_ecopcr_fasta_path = list.files(refdb_location, pattern = "-ecopcr.fasta", full.names = T)
@@ -71,3 +78,4 @@ write_excel_csv2(df_conflicts,
 
 write_excel_csv2(df_soortenevaluatie, 
                  file = file.path(refdb_location, paste0("soortenevaluatie_", PRIMER_NAME,".csv")))
+
