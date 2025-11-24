@@ -1,0 +1,81 @@
+### ------------------------- ###
+### ----- INPUT by USER ----- ###
+### ------------------------- ###
+
+PRIMER_NAME="riaz"
+# PRIMER_NAME="teleo"
+
+# output of the job script 03_refdb_ecopcr.slurm
+# Most likely its in this list:
+grep(".obidms$", x = list.dirs(".", full.names = T, recursive = T), value = T)
+
+OBITOOLS_OUTPUT=file.path("./database/20250902_refdb_riaz/2025-09-02-obitools3-refdb-riaz/")
+# OBITOOLS_OUTPUT=file.path("./database/20250902_refdb_teleo/2025-09-02-obitools3-refdb-teleo")
+
+# Assert that inputs are still defined! These INPUT vars are assumed to exist
+stopifnot(file.exists(cleaned_input_fasta),
+          exists("metadata_gdrive_key"))
+
+# ---------------------------
+### HARDOCED OUTPUT NAMES ###
+
+refdb_location  <- file.path(OBITOOLS_OUTPUT)
+
+obi_input_fasta_path = list.files(refdb_location, pattern = "-input.fasta", full.names = T)
+obi_ecopcr_fasta_path = list.files(refdb_location, pattern = "-ecopcr.fasta", full.names = T)
+obi_refdb_fasta_path = list.files(refdb_location, pattern = "-ecopcr_final_0.995.fasta", full.names = T)
+
+##################
+### READ INPUT ###
+##################
+
+# INPUT from GSHEET
+#! allowed merges per primer
+if (PRIMER_NAME == "riaz"){
+  df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Riaz")
+} else if (PRIMER_NAME == "teleo"){
+  df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
+}
+df_allowed_merges = df_allowed_merges %>% rename_all(., .funs = tolower)
+
+df_soortenlijst <-  read_sheet(metadata_gdrive_key, "Soortenlijst") %>% 
+  mutate(taxid = Taxid, priority = Priority, rank = Rank) %>% 
+  filter(priority != 9)
+
+# INPUT form OBITools3 DMS
+obitools_input_data <- parse_refdb_fasta(obi_input_fasta_path)
+
+ecopcr_data <- parse_refdb_fasta(obi_ecopcr_fasta_path)
+
+merged_data <- parse_refdb_fasta(obi_refdb_fasta_path)  %>% 
+  mutate(obi_taxid = str_replace(substring(lca_taxid, 2), "]", ""),
+         taxid = str_replace(taxid, ";", ""))
+
+# INPUT from pre-processed reference sequences GDrive
+input_data_before_multihit <- read_rds(str_replace(cleaned_input_fasta, '.fasta', '.RDS'))
+
+######################
+### POSTPROCESSING ###
+######################
+
+ecopcr_combined <- combine_ecpocr_with_merged(ecopcr_data, merged_data) 
+
+
+df_conflicts <- genereer_conflicten(ecopcr_combined, df_soortenlijst,
+                                    df_allowed_merges)
+
+df_soortenevaluatie <- genereer_soortenevaluatie(ecopcr_combined, 
+                                                 merged_data,
+                                                 input_data_before_multihit,
+                                                 df_soortenlijst, 
+                                                 df_multihit, 
+                                                 df_allowed_merges, 
+                                                 df_conflicts)
+### ---------------
+### write output ###
+write_excel_csv2(df_conflicts, 
+                 file = file.path(refdb_location,"niet_op_soort_gebracht.csv"))
+
+write_excel_csv2(df_soortenevaluatie, 
+                 file = file.path(refdb_location, paste0("soortenevaluatie_", PRIMER_NAME,".csv")))
+
