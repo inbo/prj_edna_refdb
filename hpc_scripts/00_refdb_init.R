@@ -16,10 +16,13 @@
 ### ------------------------- ###
 
 # Working directory where the results will be stored/read
-USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/PRJ_eDNA_Refdb/TELEO_max200"
+USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/12S-Riaz-Teleo/PRJ_eDNA_Refdb/PRJ_eDNA_Refdb_2026_jan/"
 
 #google drive gebruikersnaam -> assume this is set up in git config, and is the same as work-email
 USER_NAME <- system("git config --global user.email", intern = T)
+
+# Mountpoint for PRJ_eDNA_Refdb:
+RCLONE_REFDB_MOUNTPOINT="~/rclone_mnt/PRJ_eDNA_Refdb"
 
 ##################
 
@@ -42,13 +45,12 @@ googlesheets4::gs4_auth(USER_NAME) #googlesheets4::gs4_deauth()
 
 #system("module load rclone") # Load Rclone module on HPC -THIS DOES NOT WORK. NEED TO ADD TO Rstudio server FORM
 system("rclone version") # make sure rclone module is loaded in the pre-run scriplet! (module load rclone)
-system("rclone mount gdrive: ~/rclone_mnt/MyDrive -vv --daemon") # loads some minutes
-system("ls ~/rclone_mnt/MyDrive") # should list your gdrive: content
+system(paste0("rclone mount PRJ_eDNA_Refdb: ", RCLONE_REFDB_MOUNTPOINT, " -vv --daemon")) # loads some minutes
+system(paste0("ls ", RCLONE_REFDB_MOUNTPOINT)) # should list your gdrive: content
 
 # construct path to desired folder, USER SPECIFIC HARDCODE!
-root_gdrive <- file.path("~/rclone_mnt/MyDrive", 
-                         "GDRIVE_shortcuts",
-                         "PRJ_eDNA_Refdb_2023" )
+root_gdrive <- file.path(RCLONE_REFDB_MOUNTPOINT,
+                         "PRJ_eDNA_Refdb_Water" )
 
 # folder structure ~ DMP
 fasta_inputs_location <- file.path(root_gdrive, 'input_seqs', 'import')
@@ -63,4 +65,5 @@ source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_refdb.R"))
 source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_postprocessing.R"))
 
 # Create output directories in target folder
+dir.create(USER_OUTPUT_DIR)
 setwd(USER_OUTPUT_DIR)
