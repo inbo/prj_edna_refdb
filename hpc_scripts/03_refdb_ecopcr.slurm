@@ -6,8 +6,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --time=01:15:00
-#SBATCH --out=obi-refdb-riaz-%j.out
-#SBATCH --job-name=obi_refdb_riaz_iteration
+#SBATCH --out=obi-refdb-12S-%j.out
+#SBATCH --job-name=obi_refdb_12S_iteration
 
 #### INPUT:
 # LAUNCH DIR: database/
@@ -82,7 +82,7 @@ grep -c "^>" $IN_FASTA >> $MY_LOG
 
 OBI_REF_DB=$(date -I)-obitools3-refdb-"$PRIMER_NAME"
 
-mkdir "$OBI_REF_DB"
+rm -r "$OBI_REF_DB";mkdir "$OBI_REF_DB"
 
 OBI_REF_DB="$OBI_REF_DB/$OBI_REF_DB"
 

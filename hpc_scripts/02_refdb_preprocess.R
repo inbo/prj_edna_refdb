@@ -1,6 +1,7 @@
 ### ------------------------- ###
 ### ----- INPUT by USER ----- ###
 ### ------------------------- ###
+getwd()
 
 PRIMER_NAME="riaz"
 # PRIMER_NAME="teleo"
@@ -45,13 +46,16 @@ if (PRIMER_NAME == "riaz"){
   df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
 }
 
+df_multihit = df_multihit %>% rename_all(., .funs = tolower)
+
+# species in passlist but not found!
+df_passlist$ENTRY_ID[! df_passlist$ENTRY_ID %in% df_inputs_raw$genbank_id]
+
 df_passlist <- df_inputs_raw %>% 
   filter(genbank_id %in% df_passlist$ENTRY_ID) %>% 
   mutate(taxid = as.numeric(taxid))
 nrow(df_passlist)
 
-#! multihitsoorten
-df_multihit = df_multihit %>% rename_all(., .funs = tolower)
 
 #! Pas de multihitlijst toe
 #-----------------------------
@@ -96,5 +100,5 @@ cat(paste0("In your HPC-terminal:\n\n#Go to the directory with input sequences\n
   "sbatch",
   " $VSC_DATA/prj_edna_refdb/hpc_scripts/03_refdb_ecopcr.slurm",
              " -i ", basename(fasta_name),
-             " -t ", "../../taxonomy/taxdump.tar.gz",
+             " -t ", "../../taxonomy/*taxdump.tar.gz",
              " -p ", PRIMER_NAME, "\n\nWait untill the job has completed before you continue!\nYou can track this with:\n\nsqueue -M all"))
