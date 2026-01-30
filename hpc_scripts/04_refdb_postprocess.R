@@ -14,6 +14,12 @@ detected_ecopcr_files = list.files(".", full.names = T, recursive = T, pattern =
 OBITOOLS_OUTPUT = dirname(detected_ecopcr_files[max(grep(pattern = PRIMER_NAME, detected_ecopcr_files))])
 # OBITOOLS_OUTPUT=file.path("./database/20251021_refdb_riaz/2025-10-23-obitools3-refdb-riaz/")
 
+
+cleaned_input_fasta <- tail(
+  list.files(paste0(OBITOOLS_OUTPUT, "/../../input_reference_sequences/"),
+             pattern = "PRJ_eDNA_Refdb_Water_reference_sequences_cleaned.fasta", full.names = T)
+  ,1,)
+
 # Assert that inputs are still defined! These INPUT vars are assumed to exist
 stopifnot(file.exists(cleaned_input_fasta),
           exists("metadata_gdrive_key"))
@@ -39,18 +45,18 @@ stopifnot(file.exists(obi_input_fasta_path),
 #! allowed merges per primer
 if (PRIMER_NAME == "riaz"){
   df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Riaz")
-  df_multihit <- read_sheet(metadata_gdrive_key, "Multihitlist_Riaz", range = "A:H", 
+  df_multihit <- read_sheet(metadata_gdrive_key, "Multihitlist_Riaz", range = "A:H",
                             col_types = 'ccccccnn')
 } else if (PRIMER_NAME == "teleo"){
   df_allowed_merges <- read_sheet(metadata_gdrive_key, "Toegelaten_merges_Teleo")
-  df_multihit <- read_sheet(metadata_gdrive_key, "Multihitlist_Teleo", range = "A:H", 
+  df_multihit <- read_sheet(metadata_gdrive_key, "Multihitlist_Teleo", range = "A:H",
                             col_types = 'ccccccnn')
 }
 
 df_multihit = df_multihit %>% rename_all(., .funs = tolower)
 df_allowed_merges = df_allowed_merges %>% rename_all(., .funs = tolower)
 
-df_soortenlijst <- read_sheet(metadata_gdrive_key, "Soortenlijst") %>% 
+df_soortenlijst <- read_sheet(metadata_gdrive_key, "Soortenlijst") %>%
   mutate(taxid = Taxid, priority = Priority, rank = Rank) %>% 
   filter(priority != 9)
 
