@@ -19,7 +19,7 @@ Internal documentation:
 - Run all `.R` scripts in chronological order
 - Variable names in UPPERCASE might need to be provided as user-input
   - They are always declared in the beginning of each script
-- When needed swith from `PRIMER_NAME="riaz"` to `PRIMER_NAME="teleo"`
+- When needed switch from `PRIMER_NAME="riaz"` to `PRIMER_NAME="teleo"`
 - After pre-processing (`02`) you need to submit a job to run the `obi ecopcr` (done manually for now)
 - After the job finishes (<5min) continue in Rstudio (`04`)
 
@@ -27,11 +27,16 @@ Internal documentation:
 
 - Evaluation tables are written to corresponding google-sheets in the appropriate folder in [PRJ_eDNA_Refdb](https://drive.google.com/drive/folders/0AElXLysx42mqUk9PVA)
 - These tables are discussed with the scientist(s)
-- Any problematics conflicts are resolved by updating the input files on the google-drive [PRJ_eDNA_Refdb](https://drive.google.com/drive/folders/0AElXLysx42mqUk9PVA). some examples:
+- Any problematic conflicts are resolved by updating the input files on the google-drive [PRJ_eDNA_Refdb](https://drive.google.com/drive/folders/0AElXLysx42mqUk9PVA).
+Some examples:
   - Add/remove sequences in the fasta files
-  - Change/Choose priority of target species in (multiple) google-sheets
+  - Change/choose priority of target species in (multiple) google-sheets
 
 ### Output
 
 - OBITools3 object in DMS format. Can be used directly with `obi ecotag`. See https://forge.metabarcoding.org/obitools/obitools3
 - Exports of some VIEWS in fasta format to use with other taxonomic annotation tools
+
+### Citation
+
+Citation: Boyer F., Mercier C., Bonin A., Taberlet P., Coissac E. (2014) OBITools: a Unix-inspired software package for DNA metabarcoding. Molecular Ecology Resources, submitted.
