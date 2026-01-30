@@ -8,12 +8,11 @@ PRIMER_NAME="riaz"
 
 # output of the job script 03_refdb_ecopcr.slurm
 # Most likely its in this list:
-grep(".obidms$", x = list.dirs(".", full.names = T, recursive = T), value = T)
+# grep(".obidms$", x = list.dirs(".", full.names = T, recursive = T), value = T)
 
 detected_ecopcr_files = list.files(".", full.names = T, recursive = T, pattern = "ecopcr.fasta")
 OBITOOLS_OUTPUT = dirname(detected_ecopcr_files[max(grep(pattern = PRIMER_NAME, detected_ecopcr_files))])
-# OBITOOLS_OUTPUT=file.path("./database/20251021_refdb_riaz/2025-10-23-obitools3-refdb-riaz/")
-
+OBITOOLS_OUTPUT
 
 cleaned_input_fasta <- tail(
   list.files(paste0(OBITOOLS_OUTPUT, "/../../input_reference_sequences/"),
