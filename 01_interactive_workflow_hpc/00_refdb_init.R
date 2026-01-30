@@ -3,6 +3,8 @@
 ###################
 
 # !RUN INTERACTIVELY! #
+# In interactive Rstudio-server session on HPC
+# See: https://ondemand.hpc.kuleuven.be/pun/sys/dashboard/batch_connect/sys/rstudio/session_contexts/new
 
 # Adapted From: https://github.com/inbo/prj_edna_refdb
 
@@ -60,9 +62,9 @@ metadata_gdrive_key <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
 
 ### Environment klaarzetten
 ###----------------------------
-source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_fasta.R"))
-source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_refdb.R"))
-source(file.path(VSC_DATA_dir, "prj_edna_refdb","scripts/_functions_postprocessing.R"))
+source(file.path(VSC_DATA_dir, "prj_edna_refdb","00_scripts/_functions_fasta.R"))
+source(file.path(VSC_DATA_dir, "prj_edna_refdb","00_scripts/_functions_refdb.R"))
+source(file.path(VSC_DATA_dir, "prj_edna_refdb","00_scripts/_functions_postprocessing.R"))
 
 # Create output directories in target folder
 dir.create(USER_OUTPUT_DIR)
