@@ -67,7 +67,6 @@ df_inputs <- df_inputs_cleaned %>%
 
 #!  Herintroduceer sequenties uit de passlist
 #---------------------------
-
 df_inputs <- df_inputs %>% bind_rows(df_passlist) 
 
 # remove full duplicates
@@ -76,7 +75,6 @@ df_inputs <- df_inputs %>% distinct(genbank_id, taxid, dna_hash,
 
 ## create fasta input for ecopcr (obitools2)
 #---------------------------------------------
-
 # Create output dir
 dir.create(refdb_location)
 
