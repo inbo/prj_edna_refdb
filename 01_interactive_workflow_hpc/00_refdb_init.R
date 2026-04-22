@@ -18,7 +18,7 @@
 ### ------------------------- ###
 
 # Working directory where the results will be stored/read
-USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/12S-Riaz-Teleo/PRJ_eDNA_Refdb/PRJ_eDNA_Refdb_2026_jan/"
+USER_OUTPUT_DIR = "/staging/leuven/stg_00184/genetic_diversity/reference_databases/12S-Riaz-Teleo/PRJ_eDNA_Refdb/PRJ_eDNA_Refdb_2026_apr/"
 
 #google drive gebruikersnaam -> assume this is set up in git config, and is the same as work-email
 USER_NAME <- system("git config --global user.email", intern = T)
@@ -41,11 +41,7 @@ googlesheets4::gs4_auth(USER_NAME) #googlesheets4::gs4_deauth()
 
 ### Globale variabelen
 ###----------------------
-## HARDCODED
-#shortcut naar google drive path van het project
-## MyDrive + shortcut to PROJECTEN... in a MOUNTED folder Rclone
-
-#system("module load rclone") # Load Rclone module on HPC -THIS DOES NOT WORK. NEED TO ADD TO Rstudio server FORM
+# Mount PRJ_eDNA_Refdb: on user defined mountpoint
 system("rclone version") # make sure rclone module is loaded in the pre-run scriplet! (module load rclone)
 system(paste0("rclone mount PRJ_eDNA_Refdb: ", RCLONE_REFDB_MOUNTPOINT, " -vv --daemon")) # loads some minutes
 system(paste0("ls ", RCLONE_REFDB_MOUNTPOINT)) # should list your gdrive: content
@@ -55,7 +51,7 @@ root_gdrive <- file.path(RCLONE_REFDB_MOUNTPOINT,
                          "PRJ_eDNA_Refdb_Water" )
 
 # folder structure ~ DMP
-fasta_inputs_location <- file.path(root_gdrive, 'input_seqs', 'import')
+fasta_inputs_location <- file.path(root_gdrive, 'input_data' ,'input_seqs', 'import')
 
 #google key van de sheet waar de soortenlijst, multihit, ... bewaard wordt
 metadata_gdrive_key <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
