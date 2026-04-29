@@ -2,7 +2,7 @@
 #### INPUT
 ##################################
 
-source("scripts/refdb_00_initialisation.R")
+source("scripts_local/refdb_00_initialisation.R")
 
 #! soortenlijst
 df_species_all <- read_sheet(metadata_gdrive_key, "Soortenlijst") %>% 
