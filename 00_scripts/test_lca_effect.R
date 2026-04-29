@@ -1,5 +1,5 @@
 
-source("scripts/_functions_fasta.R")
+source("r_functions/_functions_fasta.R")
 library(tidyverse)
 library(googlesheets4)
 

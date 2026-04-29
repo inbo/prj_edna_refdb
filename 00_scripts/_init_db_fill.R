@@ -1,7 +1,7 @@
 library(tidyverse)
 library(DBI)
 library(RSQLite)
-source("scripts/_functions_fasta.R")
+source("r_functions/_functions_fasta.R")
 
 
 refdb_name <- "ReferentieDB.sqlite"
