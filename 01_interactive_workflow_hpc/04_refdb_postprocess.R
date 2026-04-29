@@ -78,7 +78,8 @@ input_data_before_multihit <- read_rds(str_replace(cleaned_input_fasta, '.fasta'
 ecopcr_combined <- combine_ecpocr_with_merged(ecopcr_data, merged_data) 
 
 
-df_conflicts <- genereer_conflicten(ecopcr_combined, df_soortenlijst,
+df_conflicts <- genereer_conflicten(ecopcr_combined,
+                                    df_soortenlijst,
                                     df_allowed_merges)
 
 df_soortenevaluatie <- genereer_soortenevaluatie(ecopcr_combined, 
