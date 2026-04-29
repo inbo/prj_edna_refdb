@@ -61,6 +61,7 @@ metadata_gdrive_key <- "1NidznDq9EVHN4_wfrhv0W5gZ0Q-S8wEn5jvXbb9rf8k"
 source(file.path(VSC_DATA_dir, "prj_edna_refdb","r_functions/_functions_fasta.R"))
 source(file.path(VSC_DATA_dir, "prj_edna_refdb","r_functions/_functions_refdb.R"))
 source(file.path(VSC_DATA_dir, "prj_edna_refdb","r_functions/_functions_postprocessing.R"))
+source(file.path(VSC_DATA_dir, "prj_edna_refdb","r_functions/_functions_evaluation.R"))
 
 # Create output directories in target folder
 dir.create(USER_OUTPUT_DIR)
