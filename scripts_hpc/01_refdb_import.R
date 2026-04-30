@@ -56,11 +56,10 @@ df_inputs_orig <- df_inputs_orig %>%
 # Select duplicated records
 whidup <- which(duplicated(df_inputs_orig %>%  select(genbank_id)))
 dupids <- df_inputs_orig %>% slice(whidup) %>% pull(genbank_id)
-# df_inputs_all %>% filter(genbank_id %in% dupids) %>% arrange(genbank_id) %>% view()
 
 # remove
 if (length(whidup)) df_inputs_all <- df_inputs_orig[-whidup, ] else {df_inputs_all <- df_inputs_orig}
-
+df_inputs_all %>% filter(genbank_id %in% dupids) %>% arrange(genbank_id) %>% view()
 
 #Kijk of er nog prioriteit-9 (soorten die niet weerhouden worden wegens bvb hybriden) aan seq_errors moet toegevoegd worden
 

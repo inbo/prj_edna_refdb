@@ -1,6 +1,6 @@
 
-source("scripts/refdb_teleo_00_initialisation.R")
-source("scripts/_functions_fasta.R")
+source("scripts_local/refdb_00_initialisation.R")
+source("r_functions/_functions_fasta.R")
 
 
 files <- sort(list.files(fasta_inputs, pattern = ".fasta"))

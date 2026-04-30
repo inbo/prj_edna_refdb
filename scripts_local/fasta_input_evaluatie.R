@@ -11,7 +11,7 @@ fasta_inputs <- file.path(root_gdrive, 'input_seqs', 'import')
 teleo_path <- "C:\\_GIT_PROJECTS\\prj_edna_refdb\\database\\refdb_teleo_2023-09-01"
 riaz_path  <- "C:\\_GIT_PROJECTS\\prj_edna_refdb\\database\\refdb_riaz_2023-09-01"
 inputchecks_name <- "inputchecks_2023_09_01.Rdata"
-source("scripts/_functions_fasta.R")
+source("r_functions/_functions_fasta.R")
 
 files <- sort(list.files(fasta_inputs, pattern = ".fasta"))
  all_inputs <- NULL

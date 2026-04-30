@@ -10,7 +10,7 @@
 ## INIT
 #################
 
-source(file.path("scripts", "refdb_00_initialisation.R"))
+source(file.path("scripts_local", "refdb_00_initialisation.R"))
 
 docker_container <- "obitools_pv"
 fasta_name <- "input.fasta"

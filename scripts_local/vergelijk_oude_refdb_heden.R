@@ -1,4 +1,4 @@
-source("scripts/refdb_00_initialisation.R")
+source("scripts_local/refdb_00_initialisation.R")
 
 soortenlijst <- read_sheet(metadata_gdrive_key, "Soortenlijst") %>% 
   filter(Priority != 9) %>% 

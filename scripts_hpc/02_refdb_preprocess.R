@@ -67,7 +67,6 @@ df_inputs <- df_inputs_cleaned %>%
 
 #!  Herintroduceer sequenties uit de passlist
 #---------------------------
-
 df_inputs <- df_inputs %>% bind_rows(df_passlist) 
 
 # remove full duplicates
@@ -76,7 +75,6 @@ df_inputs <- df_inputs %>% distinct(genbank_id, taxid, dna_hash,
 
 ## create fasta input for ecopcr (obitools2)
 #---------------------------------------------
-
 # Create output dir
 dir.create(refdb_location)
 
@@ -98,7 +96,7 @@ create_input_fasta(file = fasta_name,
 cat(paste0("In your HPC-terminal:\n\n#Go to the directory with input sequences\ncd ", USER_OUTPUT_DIR, "/",refdb_location,
            "\n\n# Launch the OBITools3-ecopcr JOB to perform in-silico PCR and create a REFDB :\n",
   "sbatch",
-  " $VSC_DATA/prj_edna_refdb/hpc_scripts/03_refdb_ecopcr.slurm",
+  " $VSC_DATA/prj_edna_refdb/01_interactive_workflow_hpc/03_refdb_ecopcr.slurm",
              " -i ", basename(fasta_name),
              " -t ", "../../taxonomy/*taxdump.tar.gz",
              " -p ", PRIMER_NAME, "\n\nWait untill the job has completed before you continue!\nYou can track this with:\n\nsqueue -M all"))

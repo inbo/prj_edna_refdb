@@ -2,7 +2,7 @@
 ### INPUTS OP ORDE STELLEN
 ################################
 
-source("scripts/refdb_00_initialisation.R")
+source("scripts_local/refdb_00_initialisation.R")
 
 #!inputs inlezen (nadat de sequentiefouten eruit zijn)
 df_inputs_cleaned <- read_rds(str_replace(cleaned_input_fasta, '.fasta', '.RDS'))

@@ -97,7 +97,8 @@ obi import --taxdump $TAX_DUMP_GZ $OBI_REF_DB/taxonomy/taxdump
 
 obi ecopcr -e $PRIMER_E -l $PRIMER_MINL -L $PRIMER_MAXL \
   -F $PRIMER_FWD -R $PRIMER_REV \
-  --taxonomy $OBI_REF_DB/taxonomy/taxdump $OBI_REF_DB/input $OBI_REF_DB/ecopcr
+  --taxonomy $OBI_REF_DB/taxonomy/taxdump $OBI_REF_DB/input $OBI_REF_DB/ecopcr \
+  --kingdom-mode
 
 obi export $OBI_REF_DB/ecopcr -o "$OBI_REF_DB"-ecopcr.fasta
 
